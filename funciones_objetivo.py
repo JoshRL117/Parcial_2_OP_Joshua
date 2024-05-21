@@ -126,21 +126,13 @@ class objective_f_nr:
         X, Y = np.meshgrid(x, y)
         Z = np.array([func([x, y]) for x, y in zip(X.flatten(), Y.flatten())]).reshape(X.shape)
         
-        fig = plt.figure(figsize=(12, 6))
-        ax = fig.add_subplot(121, projection='3d')
-        ax.plot_surface(X, Y, Z, cmap='viridis', alpha=0.7)
-        ax.set_title('3D Surface Plot')
+        fig, ax = plt.subplots(figsize=(8, 8))
+        contour = ax.contourf(X, Y, Z, cmap='viridis')
+        fig.colorbar(contour, ax=ax, orientation='vertical')
+        ax.set_title('Contorno 2D')
         ax.set_xlabel('X')
         ax.set_ylabel('Y')
-        ax.set_zlabel('Z')
-
-        ax2 = fig.add_subplot(122)
-        contour = ax2.contourf(X, Y, Z, cmap='viridis')
-        fig.colorbar(contour, ax=ax2, orientation='vertical')
-        ax2.set_title('2D Contour Plot')
-        ax2.set_xlabel('X')
-        ax2.set_ylabel('Y')
-        
+        plt.suptitle(' funcion ' + ' ' + name)
         plt.show()
 
 # Example usage
