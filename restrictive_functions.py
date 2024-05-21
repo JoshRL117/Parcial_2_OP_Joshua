@@ -10,7 +10,7 @@ class restriction_fuctions:
         return np.array([(1 - x[0])**2 + 100 * (x[1] - (x[0]**2))**2 ])
 
     def rosenbrooklinecubic_restriction(self,x):
-        return (((x[0] - 1  )**3 - x[1] + 1))>= 0 and (x[0] + x[1] - 2)
+        return (((x[0] - 1  )**3 - x[1] + 1))>= 0 and (x[0] + x[1] - 2) <= 0
         
     def rosenbrookdisk(self,x): 
         return np.array([(1 - x[0])**2 + 100 * (x[1] - (x[0]**2))**2])
@@ -92,6 +92,7 @@ class restriction_fuctions:
 
 
 if __name__ == "__main__":
-    data = [[-1.25, 1.25], [-1.25, 1.25]]
+    #              x              y
+    data = [[-2.25, 2.25], [-2.5, 1.75]]
     functions = restriction_fuctions(data)
-    functions.show_graph('simionescu')
+    functions.show_graph('townsed')

@@ -135,7 +135,8 @@ class objective_f_nr:
         plt.suptitle(' funcion ' + ' ' + name)
         plt.show()
 
-# Example usage
-data = [[-5, 5], [-5, 5]]
-obj = objective_f_nr(data)
-obj.show('beale')
+
+if __name__ == "__main__":
+    data = [[-5, 5], [-5, 5]]
+    obj = objective_f_nr(data)
+    obj.show('beale')
