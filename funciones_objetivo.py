@@ -92,6 +92,29 @@ class objective_f_nr:
     def styblinskitang(self, x):
         return np.sum(x**4 - 16 * x**2 + 5 * x) / 2
     
+    def shekel(self, x, a=None, c=None):
+        if a is None:# Esto lo hice para que el usuario pueda meter los pesos que guste, si no se ponen estos
+            a = np.array([
+                [4.0, 4.0, 4.0, 4.0],
+                [1.0, 1.0, 1.0, 1.0],
+                [8.0, 8.0, 8.0, 8.0],
+                [6.0, 6.0, 6.0, 6.0],
+                [3.0, 7.0, 3.0, 7.0],
+                [2.0, 9.0, 2.0, 9.0],
+                [5.0, 5.0, 3.0, 3.0],
+                [8.0, 1.0, 8.0, 1.0],
+                [6.0, 2.0, 6.0, 2.0],
+                [7.0, 3.6, 7.0, 3.6]
+            ])
+        if c is None:
+            c = np.array([0.1, 0.2, 0.2, 0.4, 0.4, 0.6, 0.3, 0.7, 0.5, 0.5])#Lo mismo que con a
+        
+        m = len(c)
+        s = 0
+        for i in range(m):
+            s -= 1 / (np.dot(x - a[i, :2], x - a[i, :2]) + c[i])#Esta es la sumatoria dado m, que seria el numero de terminos en la suma
+        return s
+    
     def show(self, name):
         if self.dim != 2:
             print('ERROR: Visualization is only supported for 2D functions.')
@@ -112,31 +135,49 @@ class objective_f_nr:
             'holdertable': self.holdertable,
             'mccormick': self.mccormick,
             'schaffern2': self.schaffern2,
-            'schaffern4': self.schaffern4
+            'schaffern4': self.schaffern4,
+            'shekel':self.shekel
         }
         
         if name not in functions:
-            print(f'ERROR: {name} is not in the package.')
+            print('ERROR: {} is not in the package.'.format(name))
             return
         
-        func = functions[name]
-        
-        x = np.linspace(self.data[0][0], self.data[0][1], 400)
-        y = np.linspace(self.data[1][0], self.data[1][1], 400)
-        X, Y = np.meshgrid(x, y)
-        Z = np.array([func([x, y]) for x, y in zip(X.flatten(), Y.flatten())]).reshape(X.shape)
-        
-        fig, ax = plt.subplots(figsize=(8, 8))
-        contour = ax.contourf(X, Y, Z, cmap='viridis')
-        fig.colorbar(contour, ax=ax, orientation='vertical')
-        ax.set_title('Contorno 2D')
-        ax.set_xlabel('X')
-        ax.set_ylabel('Y')
-        plt.suptitle(' funcion ' + ' ' + name)
-        plt.show()
+        if name == 'shekel':
+            f = functions[name]
+            x = np.linspace(self.data[0][0], self.data[0][1], 400)
+            y = np.linspace(self.data[1][0], self.data[1][1], 400)
+            X, Y = np.meshgrid(x, y)
+            Z = np.array([f(np.array([x, y])) for x, y in zip(X.flatten(), Y.flatten())]).reshape(X.shape)
+            Z=Z*-1 #Es para que la grafica se parezca a la de la actividad
+            fig = plt.figure(figsize=(12, 8))
+            ax = fig.add_subplot(111, projection='3d')
+            ax.plot_surface(X, Y, Z, cmap='viridis', edgecolor='none')
+            ax.set_title('Shekel Function')
+            ax.set_xlabel('X')
+            ax.set_ylabel('Y')
+            ax.set_zlabel('Z')
+            plt.show()
+        else: 
+
+            f = functions[name]
+            
+            x = np.linspace(self.data[0][0], self.data[0][1], 400)
+            y = np.linspace(self.data[1][0], self.data[1][1], 400)
+            X, Y = np.meshgrid(x, y)
+            Z = np.array([f([x, y]) for x, y in zip(X.flatten(), Y.flatten())]).reshape(X.shape)
+            
+            fig, ax = plt.subplots(figsize=(8, 8))
+            contour = ax.contourf(X, Y, Z, cmap='viridis')
+            fig.colorbar(contour, ax=ax, orientation='vertical')
+            ax.set_title('Contorno 2D')
+            ax.set_xlabel('X')
+            ax.set_ylabel('Y')
+            plt.suptitle(' funcion ' + ' ' + name)
+            plt.show()
 
 
 if __name__ == "__main__":
-    data = [[-5, 5], [-5, 5]]
+    data = [[0, 10], [0, 10]]
     obj = objective_f_nr(data)
-    obj.show('beale')
+    obj.show('shekel')
