@@ -107,57 +107,51 @@ def xc_calculation(x, indexs):
     return np.array(centro)
 
 def neldermeadmead(gamma, beta, epsilon, initial_point, funcion):
+    cont = 1
     mov = []
-    cont=1
     simplex = create_simplex(initial_point)
-    print(simplex)
-    mov.append(np.copy(simplex))
-    best, secondworst, worst = findpoints(simplex, funcion)  # Indices de los 3 puntos
+    mov.append(simplex)
+    best, secondworst, worst = findpoints(simplex, funcion)
     indices = [best, secondworst, worst]
     indices.remove(worst)
     centro = xc_calculation(simplex, indices)
     x_r = (2 * centro) - simplex[worst]
     x_new = x_r
     if funcion(x_r) < funcion(simplex[best]): 
-        x_new = ((1 - gamma) * centro) - (gamma * simplex[worst])
+        x_new = ((1 + gamma) * centro) - (gamma * simplex[worst])
     elif funcion(x_r) >= funcion(simplex[worst]):
         x_new = ((1 - beta) * centro) + (beta * simplex[worst])
     elif funcion(simplex[secondworst]) < funcion(x_r) and funcion(x_r) < funcion(simplex[worst]):
         x_new = ((1 - beta) * centro) - (beta * simplex[worst])
     simplex[worst] = x_new
-    mov.append(np.copy(simplex))#Esto me atoro 2 horas pipipipi 
-    print(simplex)
+    mov.append(np.copy(simplex))
     stop = stopcondition(simplex, centro, funcion)
-    cont=1
-    while stop > epsilon and cont < 100:
+    while stop >= epsilon:
         stop = 0
-        best, secondworst, worst = findpoints(simplex, funcion)  # Indices de los 3 puntos
+        best, secondworst, worst = findpoints(simplex, funcion)
         indices = [best, secondworst, worst]
         indices.remove(worst)
         centro = xc_calculation(simplex, indices)
         x_r = (2 * centro) - simplex[worst]
         x_new = x_r
-        if funcion(x_r) < funcion(simplex[best]):  # Expansion gamma > 1 
-            x_new = ((1 - beta) * centro) - (gamma * simplex[worst])
-        elif funcion(x_r) >= funcion(simplex[worst]):  # Contraccion b < 0
+        if funcion(x_r) < funcion(simplex[best]):
+            x_new = ((1 + gamma) * centro) - (gamma * simplex[worst])
+        elif funcion(x_r) >= funcion(simplex[worst]):
             x_new = ((1 - beta) * centro) + (beta * simplex[worst])
-        elif funcion(simplex[secondworst]) < funcion(x_r) and funcion(x_r) < funcion(simplex[worst]):  # Contraccion b > 0
-            x_new = ((1 - beta) * centro) - (beta * simplex[worst])
+        elif funcion(simplex[secondworst]) < funcion(x_r) and funcion(x_r) < funcion(simplex[worst]):
+            x_new = ((1 + beta) * centro) - (beta * simplex[worst])
         simplex[worst] = x_new
         stop = stopcondition(simplex, centro, funcion)
-        print(stop)
+        print(simplex)
         mov.append(np.copy(simplex))
         cont+=1
-    print("iteraciones totales {}".format(cont))
     return simplex[best], mov
-
 gamma_himmelblau = 1.1
 beta_himmelblau = 0.1
 initial_point_himmelblau = [0, 0]
-epsilon = 0.5
-print(himmelblau([0,0]))
+epsilon = 0.1
 best, mov = neldermeadmead(gamma_himmelblau, beta_himmelblau, epsilon, initial_point_himmelblau, himmelblau)
-print( best)
+print(best)
 
 # Crear el fondo de la función
 x = np.linspace(-5, 5, 500)

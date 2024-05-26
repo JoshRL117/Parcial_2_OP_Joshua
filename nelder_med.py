@@ -26,21 +26,18 @@ def rosenbrook(x):
     return evaluacion
 import numpy as np 
 
-# Función delta1 para calcular el tamaño de los pasos
 def delta1(N, scale):
     num = np.sqrt(N + 1) + N - 1
     den = N * np.sqrt(2)
     op = num / den
     return op * scale
 
-# Función delta2 para calcular el tamaño de los pasos
 def delta2(N, scale):
     num = np.sqrt(N + 1) - 1
     den = N * np.sqrt(2)
     op = num / den
     return op * scale
 
-# Función que crea el simplex inicial
 def create_simplex(initial_point, scale=1.0):
     n = len(initial_point)
     simplex = [np.array(initial_point, dtype=float)] 
@@ -58,8 +55,6 @@ def create_simplex(initial_point, scale=1.0):
     simplex_final = np.array(simplex)
 
     return np.round(simplex_final, 4)
-
-# Función para encontrar los índices de los mejores, segundos peores y peores puntos
 def findpoints(points, funcion):
     evaluaciones = [funcion(p) for p in points]
     worst = np.argmax(evaluaciones)
@@ -71,8 +66,6 @@ def findpoints(points, funcion):
         indices.remove(best)
         second_worst = indices[np.argmax([evaluaciones[i] for i in indices])]
     return best, second_worst, worst
-
-# Función para calcular el centroide del simplex
 def xc_calculation(x, indexs):
     m = x[indexs]
     centro = []
@@ -81,8 +74,6 @@ def xc_calculation(x, indexs):
         v = suma / len(m)
         centro.append(v)
     return np.array(centro)
-
-# Función de paro basada en la desviación estándar de los puntos respecto al centroide
 def stopcondition(simplex, xc, f):
     value = 0
     n = len(simplex)
@@ -103,7 +94,7 @@ def neldermeadmead(gamma, beta, epsilon, initial_point, funcion):
     x_r = (2 * centro) - simplex[worst]
     x_new = x_r
     if funcion(x_r) < funcion(simplex[best]): 
-        x_new = ((1 - gamma) * centro) - (gamma * simplex[worst])
+        x_new = ((1 + gamma) * centro) - (gamma * simplex[worst])
     elif funcion(x_r) >= funcion(simplex[worst]):
         x_new = ((1 - beta) * centro) + (beta * simplex[worst])
     elif funcion(simplex[secondworst]) < funcion(x_r) and funcion(x_r) < funcion(simplex[worst]):
@@ -111,7 +102,7 @@ def neldermeadmead(gamma, beta, epsilon, initial_point, funcion):
     simplex[worst] = x_new
     mov.append(np.copy(simplex))
     stop = stopcondition(simplex, centro, funcion)
-    while stop >= epsilon and cont < 100:
+    while stop >= epsilon:
         stop = 0
         best, secondworst, worst = findpoints(simplex, funcion)
         indices = [best, secondworst, worst]
@@ -120,14 +111,14 @@ def neldermeadmead(gamma, beta, epsilon, initial_point, funcion):
         x_r = (2 * centro) - simplex[worst]
         x_new = x_r
         if funcion(x_r) < funcion(simplex[best]):
-            x_new = ((1 - beta) * centro) - (gamma * simplex[worst])
+            x_new = ((1 + gamma) * centro) - (gamma * simplex[worst])
         elif funcion(x_r) >= funcion(simplex[worst]):
             x_new = ((1 - beta) * centro) + (beta * simplex[worst])
         elif funcion(simplex[secondworst]) < funcion(x_r) and funcion(x_r) < funcion(simplex[worst]):
-            x_new = ((1 - beta) * centro)
+            x_new = ((1 + beta) * centro) - (beta * simplex[worst])
         simplex[worst] = x_new
         stop = stopcondition(simplex, centro, funcion)
-        print(simplex)
+        print(stop)
         mov.append(np.copy(simplex))
         cont+=1
     return simplex[best], mov
@@ -136,8 +127,8 @@ test=np.array([[2,3],[3,2],[3.5,3.5]])
 initialpoint=[2, 1.5, 3, -1.5, -2]
 i_p2=[-2,-2,-2]
 escalar=1
-gamma=1.5
-b=0.6
+gamma=1.1
+b=0.1
 e=0.5
 best, extra= (neldermeadmead(gamma,b,e,initialpoint,rosenbrook))
 print(best)
