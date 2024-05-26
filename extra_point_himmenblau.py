@@ -25,30 +25,28 @@ def update(frame):
 
 # Funciones de prueba
 def himmelblau(p):
-    return (p[0]**2 + p[1] - 11)**2 + (p[0] + p[1]**2 - 7)**2 # (p[0]**2 + p[1] - 11)**2 + (p[0] + p[1]**2 - 7)**2
-
+    return (p[0]**2 + p[1] - 11)**2 + (p[0] + p[1]**2 - 7)**2
 def testfunction(x):
     return x[0]**2 + x[1]**2
-
 def sphere(x):
-    value = 0
+    value=0
     for i in range(len(x)):
-        value += x[i]**2
+        value+= x[i]**2
     return value
 
 def rastrigin(x, A=10):
     n = len(x)
     suma_ras = 0
-    for i in range(n - 1):
-        suma_ras += (x[i]**2) - (A * np.cos((2 * np.pi) * x[i]))
-    return (A * n) - suma_ras
-
-def rosenbrook(x):
-    n = len(x)
-    evaluacion = 0
     for i in range(n):
-        evaluacion += (100 * (x[i] + 1 - (x[i]**2))**2) + (1 - x[i])**2
+        suma_ras += x[i]**2 - A * np.cos(2 * np.pi * x[i])
+    return A * n + suma_ras
+def rosenbrook(x):
+    n=len(x)#Esta es la dimension del problema
+    evaluacion=0
+    for i in range(n):
+        evaluacion+=((100 * (x[i] +1 - (x[i]**2))**2) + (1 -x[i])**2)
     return evaluacion
+import numpy as np 
 
 def delta1(N, scale):
     num = np.sqrt(N + 1) + N - 1
@@ -61,13 +59,6 @@ def delta2(N, scale):
     den = N * np.sqrt(2)
     op = num / den
     return op * scale
-
-def stopcondition(simplex, xc, f):
-    value = 0
-    n = len(simplex)
-    for i in range(n):
-        value += (((f(simplex[i]) - f(xc))**2) / (n + 1))
-    return np.sqrt(value)
 
 def create_simplex(initial_point, scale=1.0):
     n = len(initial_point)
@@ -82,9 +73,10 @@ def create_simplex(initial_point, scale=1.0):
             else:
                 point[j] += d2
         simplex.append(point)
+    
     simplex_final = np.array(simplex)
-    return np.round(simplex_final, 4)
 
+    return np.round(simplex_final, 4)
 def findpoints(points, funcion):
     evaluaciones = [funcion(p) for p in points]
     worst = np.argmax(evaluaciones)
@@ -96,16 +88,22 @@ def findpoints(points, funcion):
         indices.remove(best)
         second_worst = indices[np.argmax([evaluaciones[i] for i in indices])]
     return best, second_worst, worst
-
 def xc_calculation(x, indexs):
     m = x[indexs]
     centro = []
-    for fila in m: 
-        suma = np.sum(fila)
-        v = suma / (len(fila))
+    for i in range(len(m[0])):
+        suma = sum(p[i] for p in m)
+        v = suma / len(m)
         centro.append(v)
     return np.array(centro)
+def stopcondition(simplex, xc, f):
+    value = 0
+    n = len(simplex)
+    for i in range(n):
+        value += (((f(simplex[i]) - f(xc))**2) / (n + 1))
+    return np.sqrt(value)
 
+# Función principal que implementa el algoritmo Nelder-Mead en n dimensiones
 def neldermeadmead(gamma, beta, epsilon, initial_point, funcion):
     cont = 1
     mov = []
@@ -142,13 +140,13 @@ def neldermeadmead(gamma, beta, epsilon, initial_point, funcion):
             x_new = ((1 + beta) * centro) - (beta * simplex[worst])
         simplex[worst] = x_new
         stop = stopcondition(simplex, centro, funcion)
-        print(simplex)
+        print(stop)
         mov.append(np.copy(simplex))
         cont+=1
     return simplex[best], mov
 gamma_himmelblau = 1.1
-beta_himmelblau = 0.1
-initial_point_himmelblau = [0, 0]
+beta_himmelblau = 0.5
+initial_point_himmelblau = [0,0]
 epsilon = 0.1
 best, mov = neldermeadmead(gamma_himmelblau, beta_himmelblau, epsilon, initial_point_himmelblau, himmelblau)
 print(best)
@@ -169,5 +167,5 @@ plt.title('Nelder-Mead Simplex Movements for Himmelblau')
 
 
 ani_himmelblau = FuncAnimation(fig, update, frames=len(mov), init_func=init, blit=True, repeat=False)
-#plt.show()
+plt.show()
 
