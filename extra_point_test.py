@@ -1,46 +1,54 @@
 import numpy as np 
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
-#Funciones 
+from matplotlib.animation import FuncAnimation
+
+# Funciones de prueba
 def himmelblau(p):
     return (p[0]**2 + p[1] - 11)**2 + (p[0] + p[1]**2 - 7)**2
+
 def testfunction(x):
     return x[0]**2 + x[1]**2
+
 def sphere(x):
-    value=0
+    value = 0
     for i in range(len(x)):
-        value+= x[i]**2
+        value += x[i]**2
     return value
 
 def rastrigin(x, A=10):
     n = len(x)
     suma_ras = 0
-    for i in range(n):
-        suma_ras += x[i]**2 - A * np.cos(2 * np.pi * x[i])
-    return A * n + suma_ras
-def rosenbrook(x):
-    n=len(x)#Esta es la dimension del problema
-    evaluacion=0
-    for i in range(n):
-        evaluacion+=((100 * (x[i] +1 - (x[i]**2))**2) + (1 -x[i])**2)
-    return evaluacion
-import numpy as np 
+    for i in range(n - 1):
+        suma_ras += (x[i]**2) - (A * np.cos((2 * np.pi) * x[i]))
+    return (A * n) - suma_ras
 
-# Función delta1 para calcular el tamaño de los pasos
+def rosenbrook(x):
+    n = len(x)
+    evaluacion = 0
+    for i in range(n):
+        evaluacion += (100 * (x[i] + 1 - (x[i]**2))**2) + (1 - x[i])**2
+    return evaluacion
+
 def delta1(N, scale):
     num = np.sqrt(N + 1) + N - 1
     den = N * np.sqrt(2)
     op = num / den
     return op * scale
 
-# Función delta2 para calcular el tamaño de los pasos
 def delta2(N, scale):
     num = np.sqrt(N + 1) - 1
     den = N * np.sqrt(2)
     op = num / den
     return op * scale
 
-# Función que crea el simplex inicial
+def stopcondition(simplex, xc, f):
+    value = 0
+    n = len(simplex)
+    for i in range(n):
+        value += (((f(simplex[i]) - f(xc))**2) / (n + 1))
+    return np.sqrt(value)
+
 def create_simplex(initial_point, scale=1.0):
     n = len(initial_point)
     simplex = [np.array(initial_point, dtype=float)] 
@@ -54,12 +62,9 @@ def create_simplex(initial_point, scale=1.0):
             else:
                 point[j] += d2
         simplex.append(point)
-    
     simplex_final = np.array(simplex)
-
     return np.round(simplex_final, 4)
 
-# Función para encontrar los índices de los mejores, segundos peores y peores puntos
 def findpoints(points, funcion):
     evaluaciones = [funcion(p) for p in points]
     worst = np.argmax(evaluaciones)
@@ -72,31 +77,21 @@ def findpoints(points, funcion):
         second_worst = indices[np.argmax([evaluaciones[i] for i in indices])]
     return best, second_worst, worst
 
-# Función para calcular el centroide del simplex
 def xc_calculation(x, indexs):
     m = x[indexs]
     centro = []
-    for i in range(len(m[0])):
-        suma = sum(p[i] for p in m)
-        v = suma / len(m)
+    for fila in m: 
+        suma = np.sum(fila)
+        v = suma / (len(fila))
         centro.append(v)
     return np.array(centro)
 
-# Función de paro basada en la desviación estándar de los puntos respecto al centroide
-def stopcondition(simplex, xc, f):
-    value = 0
-    n = len(simplex)
-    for i in range(n):
-        value += (((f(simplex[i]) - f(xc))**2) / (n + 1))
-    return np.sqrt(value)
-
-# Función principal que implementa el algoritmo Nelder-Mead en n dimensiones
 def neldermeadmead(gamma, beta, epsilon, initial_point, funcion):
-    cont = 1
     mov = []
+    cont=1
     simplex = create_simplex(initial_point)
-    mov.append(simplex)
-    best, secondworst, worst = findpoints(simplex, funcion)
+    mov.append(np.copy(simplex))
+    best, secondworst, worst = findpoints(simplex, funcion)  # Indices de los 3 puntos
     indices = [best, secondworst, worst]
     indices.remove(worst)
     centro = xc_calculation(simplex, indices)
@@ -111,34 +106,71 @@ def neldermeadmead(gamma, beta, epsilon, initial_point, funcion):
     simplex[worst] = x_new
     mov.append(np.copy(simplex))
     stop = stopcondition(simplex, centro, funcion)
-    while stop >= epsilon and cont < 100:
+    cont=1
+    while stop > epsilon and cont < 100:
         stop = 0
-        best, secondworst, worst = findpoints(simplex, funcion)
+        best, secondworst, worst = findpoints(simplex, funcion)  # Indices de los 3 puntos
         indices = [best, secondworst, worst]
         indices.remove(worst)
         centro = xc_calculation(simplex, indices)
         x_r = (2 * centro) - simplex[worst]
         x_new = x_r
-        if funcion(x_r) < funcion(simplex[best]):
+        if funcion(x_r) < funcion(simplex[best]):  # Expansion gamma > 1 
             x_new = ((1 - beta) * centro) - (gamma * simplex[worst])
-        elif funcion(x_r) >= funcion(simplex[worst]):
+        elif funcion(x_r) >= funcion(simplex[worst]):  # Contraccion b < 0
             x_new = ((1 - beta) * centro) + (beta * simplex[worst])
-        elif funcion(simplex[secondworst]) < funcion(x_r) and funcion(x_r) < funcion(simplex[worst]):
-            x_new = ((1 - beta) * centro)
+        elif funcion(simplex[secondworst]) < funcion(x_r) and funcion(x_r) < funcion(simplex[worst]):  # Contraccion b > 0
+            x_new = ((1 - beta) * centro) - (beta * simplex[worst])
         simplex[worst] = x_new
         stop = stopcondition(simplex, centro, funcion)
-        print(simplex)
+        print(stop)
         mov.append(np.copy(simplex))
         cont+=1
+    print("iteraciones totales {}".format(cont))
     return simplex[best], mov
 
-test=np.array([[2,3],[3,2],[3.5,3.5]])
-initialpoint=[2, 1.5, 3, -1.5, -2]
-i_p2=[-2,-2,-2]
-escalar=1
-gamma=1.5
-b=0.6
-e=0.5
-best, extra= (neldermeadmead(gamma,b,e,initialpoint,rosenbrook))
-print(best)
+# Parámetros
+initial_point = [-2, -2, -2]
+gamma = 1.1
+beta = 0.2
+epsilon = 0.1
+best, mov = neldermeadmead(gamma, beta, epsilon, initial_point, rastrigin)
+# Crear el fondo de la función
+x = np.linspace(-3, 3, 500)
+y = np.linspace(-3, 3, 500)
+X, Y = np.meshgrid(x, y)
+Z = rastrigin([X, Y])
 
+# Configuración de la animación
+fig, ax = plt.subplots()
+ax.set_xlim(-3, 3)
+ax.set_ylim(-3, 3)
+contour = ax.contourf(X, Y, Z, levels=50, cmap='viridis')
+plt.colorbar(contour)
+plt.title('Nelder-Mead Simplex Movements')
+
+# Inicialización de la animación
+def init():
+    ax.clear()
+    ax.set_xlim(-3, 3)
+    ax.set_ylim(-3, 3)
+    ax.contourf(X, Y, Z, levels=50, cmap='viridis')
+    plt.title('Nelder-Mead Simplex Movements')
+    return []
+
+# Actualización de la animación
+def update(frame):
+    ax.clear()
+    ax.set_xlim(-3, 3)
+    ax.set_ylim(-3, 3)
+    ax.contourf(X, Y, Z, levels=50, cmap='viridis')
+    simplex = mov[frame]
+    triangle = patches.Polygon(simplex[:,:2], closed=True, fill=None, edgecolor='blue')
+    ax.add_patch(triangle)
+    for point in simplex:
+        ax.plot(point[0], point[1], 'o', color='red')
+    return [triangle]
+
+# Creación y ejecución de la animación
+ani = FuncAnimation(fig, update, frames=len(mov), init_func=init, blit=True)
+plt.show()
