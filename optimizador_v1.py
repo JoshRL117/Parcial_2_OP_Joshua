@@ -1,7 +1,7 @@
 import numpy as np 
 
 class cauchy_6_junio:#Esta es la clase nada mas para entregar la tarea a tiempo
-    def __init__(self,a,b,epsilon,f,iter=100):
+    def __init__(self,a,b,epsilon:float,f,iter=100):
         self.a=a
         self.b=b
         self.epsilon=epsilon
@@ -229,16 +229,16 @@ class cauchy_6_junio:#Esta es la clase nada mas para entregar la tarea a tiempo
         k=0
         x=self.a
         if x - abs(self.epsilon)>= self.funcion(x) and self.funcion(x) >= self.funcion(x + abs(self.epsilon)):
-            delta=abs(self.epsilon)#
-        elif x - abs(self.epsilon)<= self.funcion(x) and self.funcion(x) <= self.funcion(x + abs(delta)):
+            delta=abs(self.epsilon)
+        elif x - abs(self.epsilon)<= self.funcion(x) and self.funcion(x) <= self.funcion(x + abs(self.epsilon)):
             delta=delta
         
         x_nuevo=x + ((2**k)* delta)
         x_anterior=x
         x_ant=x_anterior
-        while f(x_nuevo) <= f(x_anterior):
+        while self.funcion(x_nuevo) <= self.funcion(x_anterior):
             k+=1
-            if k >= n:
+            if k >= self.iteracion:
                 return x_ant,x_nuevo
             x_ant=x_anterior
             x_anterior=x_nuevo
@@ -247,22 +247,22 @@ class cauchy_6_junio:#Esta es la clase nada mas para entregar la tarea a tiempo
         print("Los puntos actuales son {} y {} ".format(x_anterior,x_nuevo))
         return x_ant,x_nuevo
         
-    def w_to_x(w:float, a,b )-> float:
-            return w * (b-a) + a
+    def w_to_x(self, w:float )-> float:
+            return w * (self.b-self.a) + self.a
 
-    def busquedadorada(self,f,e:float,a:float=None, b:float=None)->float:
+    def busquedadorada(self)->float:
         PHI=(1 + np.sqrt(5))/ 2-1
         aw,bw=0,1 
         Lw=1
         k=1# index del actual 
-        while Lw> e: 
+        while Lw> self.epsilon: 
             w2= aw + PHI* Lw
             w1=bw - PHI * Lw
-            aw,bw=self.findregions(w1,w2,aw,bw,f)
+            aw,bw=self.findregions(w1,w2,aw,bw,self.funcion)
             k+=1 
             Lw=bw-aw
         
-        return (f(aw,a,b) + f(bw,a,b))/2 
+        return (self.funcion(aw,self.a,self.b) + self.funcion(bw,self.a,self.b))/2 
     def gradiente_calculation(self,x,f,delta=0.001):
         vector_f1_prim=[]
         x_work=np.array(x)
@@ -288,19 +288,37 @@ class cauchy_6_junio:#Esta es la clase nada mas para entregar la tarea a tiempo
         p2[i]=nump2
         numerador=f(p) - f(p2)
         return numerador / (2 * delta) 
+    
+    def optimizer(self,name):
+        name=name.lower()
+        if name == 'exhaustive':#1
+            return self.Exhaustivesearchmethod
+        elif name== 'bounding':#2
+            return self.boundingphase
+        elif name == 'interval':#3 
+            return self.intervalhalvingmethod
+        elif name == 'golden':#4
+            return self.busquedadorada
+        elif name == 'newton':#5
+            return self.newton_raphson
+        elif name== 'secante':#6
+            return self.metodosecante
+        elif name == 'biseccion':#7
+            return self.biseccionmethod 
 
-    def cauchy(self,x_inicial,e1,e2,M,f,optimizador=busquedadorada):#e son los epsilon y M es el numero de iteraciones 
+
+    def cauchy(self,e1,e2,optimizador):#e son los epsilon y M es el numero de iteraciones 
         stop=False
-        xk=x_inicial
+        opt=self.optimizer(optimizador)
+        xk=self.a
         k=0
         while not stop: 
-            gradiente=np.array(self.gradiente_calculation(xk,f))
-            if np.linalg.norm(gradiente)< e1 or k >=M:
+            gradiente=np.array(self.gradiente_calculation(xk,self.funcion))
+            if np.linalg.norm(gradiente)< e1 or k >=self.iteracion:
                 stop=True 
-            else: 
-                def alpha_funcion(alpha):
-                    return xk - alpha*gradiente
-                alfa=optimizador(f,e2)
+            else:
+                self.epsilon=e2 
+                alfa=opt()
                 x_k1= xk - alfa * gradiente#Punto siguiente a xk
                 if np.linalg.norm((x_k1-xk))/ (np.linalg.norm(xk) + 0.0000001 )<= e2:
                     stop=True 
