@@ -307,7 +307,7 @@ class cauchy_6_junio:#Esta es la clase nada mas para entregar la tarea a tiempo
             return self.biseccionmethod 
 
 
-    def cauchy(self,e1,e2,optimizador):#e son los epsilon y M es el numero de iteraciones 
+    def cauchy(self,e1,optimizador):#e son los epsilon y M es el numero de iteraciones 
         stop=False
         opt=self.optimizer(optimizador)
         xk=self.a
@@ -317,10 +317,10 @@ class cauchy_6_junio:#Esta es la clase nada mas para entregar la tarea a tiempo
             if np.linalg.norm(gradiente)< e1 or k >=self.iteracion:
                 stop=True 
             else:
-                self.epsilon=e2#Es para que este epsilon sea el de los optimizadores  
+                #Es para que este epsilon sea el de los optimizadores  
                 alfa=opt()
                 x_k1= xk - alfa * gradiente#Punto siguiente a xk
-                if np.linalg.norm((x_k1-xk))/ (np.linalg.norm(xk) + 0.0000001 )<= e2:
+                if np.linalg.norm((x_k1-xk))/ (np.linalg.norm(xk) + 0.0000001 )<= self.epsilon:
                     stop=True 
                 else:
                     k+=1
@@ -328,5 +328,10 @@ class cauchy_6_junio:#Esta es la clase nada mas para entregar la tarea a tiempo
         return xk
 
 if __name__== 'main':
-
+    def himmelblau(p):
+        return (p[0]**2 + p[1] - 11)**2 + (p[0] + p[1]**2 - 7)**2
+    a=0
+    b=1
+    e=0.001
+    opt=cauchy_6_junio()
     print("HELLO WORLD")
