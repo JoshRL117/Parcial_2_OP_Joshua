@@ -317,7 +317,7 @@ class cauchy_6_junio:#Esta es la clase nada mas para entregar la tarea a tiempo
             if np.linalg.norm(gradiente)< e1 or k >=self.iteracion:
                 stop=True 
             else:
-                self.epsilon=e2 
+                self.epsilon=e2#Es para que este epsilon sea el de los optimizadores  
                 alfa=opt()
                 x_k1= xk - alfa * gradiente#Punto siguiente a xk
                 if np.linalg.norm((x_k1-xk))/ (np.linalg.norm(xk) + 0.0000001 )<= e2:
@@ -326,3 +326,7 @@ class cauchy_6_junio:#Esta es la clase nada mas para entregar la tarea a tiempo
                     k+=1
                     xk=x_k1
         return xk
+
+if __name__== 'main':
+
+    print("HELLO WORLD")
