@@ -21,16 +21,16 @@ class cauchy_6_junio:#Esta es la clase nada mas para entregar la tarea a tiempo
         return x2+delta
     def despejen(a,b,n):
         return int((2*(b-a))/n)
-    def Exhaustivesearchmethod(self,f,e:float,a:float=None, b:float=None):
-        n=self.despejen(a,b,e)
-        d=self.delta(a,b,n)
-        X1=a
+    def Exhaustivesearchmethod(self):
+        n=self.despejen(self.a,self.b,self.epsilon)
+        d=self.delta(self.a,self.b,n)
+        X1=self.a
         X2=self.x2(X1,d)
         X3=self.x3(X2,d)
-        FX1=f(X1)
-        FX2=f(X2)
-        FX3=f(X3)
-        while (b>=X3):
+        FX1=self.funcion(X1)
+        FX2=self.funcion(X2)
+        FX3=self.funcion(X3)
+        while (self.b>=X3):
             if FX1>=FX2 and FX2<=FX3:
                 return X1,X3
             else:
@@ -38,55 +38,62 @@ class cauchy_6_junio:#Esta es la clase nada mas para entregar la tarea a tiempo
                 X1=X2
                 X2=X3
                 X3=self.x3(X2,d)
-                FX1=f(X1)
-                FX2=f(X2)
-                FX3=f(X3)
+                FX1=self.funcion(X1)
+                FX2=self.funcion(X2)
+                FX3=self.funcion(X3)
         return X1,X3
     
-    def primeraderivadanumerica(x_actual,f):
+    def primeraderivadanumerica(self, x_actual,f):
         delta=0.0001
         numerador= f(x_actual + delta) - f (x_actual - delta) 
-        return (numerador / (2 * delta))*-1
+        return (numerador / (2 * delta))
 
-    def segundaderivadanumerica(x_actual,f):
+    def segundaderivadanumerica(self, x_actual,f):
         delta=0.0001
         numerado= f(x_actual + delta) - (2 * f (x_actual + f(x_actual- delta))) 
-        return numerado / (delta**2)
+        return (numerado / (delta**2))
 
-    def newton_raphson(self,x,e,f):
-        k=1
-        x_actual=x[k]
-        xderiv=self.primeraderivadanumerica(x_actual,f)
-        xderiv2=self.segundaderivadanumerica(x_actual,f)
+    def newton_raphson(self):
+        cont=0
+        x_actual=self.a
+        xderiv=self.primeraderivadanumerica(x_actual,self.funcion)
+        xderiv2=self.segundaderivadanumerica(x_actual,self.funcion)
         xsig= x_actual  - (xderiv/xderiv2)
-        while (self.primeraderivadanumerica(xsig,f) > e):
-            k+=1
-            x_actual=x[k]
-            xderiv=self.primeraderivadanumerica(x_actual,f)
-            xderiv2=self.segundaderivadanumerica(x_actual,f)
+        print("{} - {} / {}".format(x_actual,xderiv,xderiv2))
+        print(xsig)
+        x_actual=xsig
+        while  (abs(self.primeraderivadanumerica(xsig,self.funcion)) > self.epsilon):
+            #print(" {} > {}".format(self.primeraderivadanumerica(xsig,f),e))
+            xderiv=self.primeraderivadanumerica(x_actual,self.funcion)
+            xderiv2=self.segundaderivadanumerica(x_actual,self.funcion)
+            #print(xsig)
             xsig= x_actual  - (xderiv/xderiv2)
+            #print("{} - {} / {}".format(x_actual,xderiv,xderiv2))
+            x_actual=xsig
+            #print("{} - {}".format(x_actual,(xderiv/xderiv2) ))
+            cont+=1
+            
         return xsig
 
-    def biseccionmethod(self,f,e:float,a_orginal:float=None, b_original:float=None):
-        a = np.random.uniform(a_orginal, b_original)
-        b = np.random.uniform(a_orginal, b_original)
-        while(self.primeraderivadanumerica(a,f) > 0):
-            a = np.random.uniform(a_orginal, b_original)
-            print(self.primeraderivadanumerica(a,f))
+    def biseccionmethod(self):
+        a = np.random.uniform(self.a, self.b)
+        b = np.random.uniform(self.a, self.b)
+        while(self.primeraderivadanumerica(a,self.funcion) > 0):
+            a = np.random.uniform(self.a, self.b)
         
-        while (self.primeraderivadanumerica(b,f) < 0): 
-            b = np.random.uniform(a_orginal, b_original)
+        while (self.primeraderivadanumerica(b,self.funcion) < 0): 
+            b = np.random.uniform(self.a, self.b)
         x1=a
         x2=b
         z = ((x2+x1)/2)
         #print(primeraderivadanumerica(x1,f))
-        while(self.primeraderivadanumerica(z,f) > e):
+        while(self.primeraderivadanumerica(z,self.funcion) > self.epsilon):
             #print(z)
-            if self.primeraderivadanumerica(z,f) < 0: 
+            if self.primeraderivadanumerica(z,self.funcion) < 0: 
                 x1=z
                 z=0
                 z = int((x2+x1)/2)
-            elif self.primeraderivadanumerica(z,f) > 0: 
+            elif self.primeraderivadanumerica(z,self.funcion) > 0: 
                 x2=z
                 z=0
                 z = ((x2+x1)/2)
@@ -100,26 +107,26 @@ class cauchy_6_junio:#Esta es la clase nada mas para entregar la tarea a tiempo
         op=numerador/denominador
         return x2 - op
 
-    def metodosecante(self,f,e:float,a_orginal:float=None, b_original:float=None):
-        a = np.random.randint(a_orginal, b_original)
-        b = np.random.randint(a_orginal, b_original)
-        while(self.primeraderivadanumerica(a,f) > 0):
-            a = np.random.randint(a_orginal, b_original)
+    def metodosecante(self):
+        a = np.random.randint(self.a, self.b)
+        b =np.random.randint(self.a, self.b)
+        while(self.primeraderivadanumerica(a,self.funcion) > 0):
+            a = np.random.randint(self.a, self.b)
         
-        while (self.primeraderivadanumerica(b,f) < 0): 
-            b = np.random.randint(a_orginal, b_original)
+        while (self.primeraderivadanumerica(b,self.funcion) < 0): 
+            b = np.random.randint(self.a, self.b)
         x1=a
         x2=b
-        z = self.calculozensecante(x2,x1,f)
-        while(self.primeraderivadanumerica(z,f) > e): 
-            if self.primeraderivadanumerica(z,f) < 0: 
+        z = self.calculozensecante(x2,x1,self.funcion)
+        while(self.primeraderivadanumerica(z,self.funcion) > self.epsilon): 
+            if self.primeraderivadanumerica(z,self.funcion) < 0: 
                 x1=z
                 z=0
-                z = self.calculozensecante(x2,x1,f)
-            if self.primeraderivadanumerica(z,f) > 0: 
+                z = self.calculozensecante(x2,x1,self.funcion)
+            if self.primeraderivadanumerica(z,self.funcion) > 0: 
                 x2=z
                 z=0
-                z = self.calculozensecante(x2,x1,f)
+                z = self.calculozensecante(x2,x1,self.funcion)
         return x1 , x2
     
     def findregions(rangomin,rangomax,x1,x2,f):
@@ -158,32 +165,32 @@ class cauchy_6_junio:#Esta es la clase nada mas para entregar la tarea a tiempo
         else:
             return True
 
-    def intervalhalvingmethod(self,f,e:float,a:float=None, b:float=None):
-        xm=(a+b)/2
-        l=b-a
-        x1=a + (l/4)
-        x2=b - (l/4)
-        a,b=self.findregions(a,b,x1,x2,f)
+    def intervalhalvingmethod(self):
+        xm=(self.a+self.b)/2
+        l=self.b-self.a
+        x1=self.a + (l/4)
+        x2=self.b - (l/4)
+        a,b=self.findregions(a,b,x1,x2,self.funcion)
         #Validaciones
-        endflag=self.intervalstep5(a,b,e)
+        endflag=self.intervalstep5(a,b,self.funcion)
         l=b-a
         while endflag:
             x1=a + (l/4)
             x2=b - l/4
             #Se obtiene las f(x) de x1 y x2 
-            b,xm,flag3=self.intervalstep3(b,x1,xm,f)
-            a,xm,flag4=self.intervalstep4(a,x2,xm,f)
+            b,xm,flag3=self.intervalstep3(b,x1,xm,self.funcion)
+            a,xm,flag4=self.intervalstep4(a,x2,xm,self.funcion)
             if flag3== True:
-                endflag=self.intervalstep5(a,b,e)
+                endflag=self.intervalstep5(a,b,self.epsilon)
             elif flag3==False:
-                a,xm,flag4=self.intervalstep4(a,x2,xm,f)
+                a,xm,flag4=self.intervalstep4(a,x2,xm,self.funcion)
             
             if flag4==True:
-                endflag=self.intervalstep5(a,b,e)
+                endflag=self.intervalstep5(a,b,self.epsilon)
             elif flag4==False: 
                 a=x1
                 b=x2
-                endflag=self.intervalstep5(a,b,e)
+                endflag=self.intervalstep5(a,b,self.epsilon)
         return xm
     def fibonacci_iterativo(n):
         fibonaccie = [0, 1]
@@ -196,31 +203,34 @@ class cauchy_6_junio:#Esta es la clase nada mas para entregar la tarea a tiempo
         indice2= n + 1
         return fibonacci[indice1]/ fibonacci[indice2]
 
-    def fibonaccisearch(self,a,b,n,f):
-        l=b-a
-        seriefibonacci=self.fibonacci_iterativo(n*10)
+    def fibonaccisearch(self):
+        l=self.b-self.a
+        seriefibonacci=self.fibonacci_iterativo(self.iteracion*10)
         #calculo de lk
         k=2
-        lk=self.calculo_lk(seriefibonacci,n,k)
-        x1=a+lk
-        x2=b-lk
-        while k != n:
+        lk=self.calculo_lk(seriefibonacci,self.iteracion,k)
+        x1=self.a+lk
+        x2=self.b-lk
+        a=self.a
+        b=self.b
+        while k != self.iteracion:
             if k % 2 == 0:
-                evalx1=f(x1)
-                a,b=self.findregions(a,b,evalx1,x2,f)
+                evalx1=self.funcion(x1)
+                a,b=self.findregions(a,b,evalx1,x2,self.funcion)
                 #print(" Valor actual de a y b = {} , {}".format(a,b))
             else:
-                evalx2=f(x2)
-                a,b=self.findregions(a,b,x1,evalx2,f)
+                evalx2=self.funcion(x2)
+                a,b=self.findregions(a,b,x1,evalx2,self.funcion)
                 #print(" Valor actual de a y b = {} , {}".format(a,b))
             k+=1
         
         return a , b
-    def boundingphase(x,delta,n,f):
+    def boundingphase(self):
         k=0
-        if x - abs(delta)>= f(x) and f(x) >= f(x + abs(delta)):
-            delta=abs(delta)
-        elif x - abs(delta)<= f(x) and f(x) <= f(x + abs(delta)):
+        x=self.a
+        if x - abs(self.epsilon)>= self.funcion(x) and self.funcion(x) >= self.funcion(x + abs(self.epsilon)):
+            delta=abs(self.epsilon)
+        elif x - abs(self.epsilon)<= self.funcion(x) and self.funcion(x) <= self.funcion(x + abs(delta)):
             delta=delta
         
         x_nuevo=x + ((2**k)* delta)
@@ -253,3 +263,48 @@ class cauchy_6_junio:#Esta es la clase nada mas para entregar la tarea a tiempo
             Lw=bw-aw
         
         return (f(aw,a,b) + f(bw,a,b))/2 
+    def gradiente_calculation(self,x,f,delta=0.001):
+        vector_f1_prim=[]
+        x_work=np.array(x)
+        x_work_f=x_work.astype(np.float64)
+        if isinstance(delta,int) or isinstance(delta,float):
+            for i in range(len(x_work_f)):
+                point=np.array(x_work_f,copy=True)
+                vector_f1_prim.append(self.primeraderivadaop(point,i,delta,f))
+            return vector_f1_prim
+        else:
+            for i in range(len(x_work_f)):
+                point=np.array(x_work_f,copy=True)
+                vector_f1_prim.append(self.primeraderivadaop(point,i,delta[i],f))
+            return vector_f1_prim
+
+    def primeraderivadaop(x,i,delta,f):
+        mof=x[i]
+        p=np.array(x,copy=True)
+        p2=np.array(x,copy=True)
+        nump1=mof + delta
+        nump2 =mof - delta
+        p[i]= nump1
+        p2[i]=nump2
+        numerador=f(p) - f(p2)
+        return numerador / (2 * delta) 
+
+    def cauchy(self,x_inicial,e1,e2,M,f,optimizador=busquedadorada):#e son los epsilon y M es el numero de iteraciones 
+        stop=False
+        xk=x_inicial
+        k=0
+        while not stop: 
+            gradiente=np.array(self.gradiente_calculation(xk,f))
+            if np.linalg.norm(gradiente)< e1 or k >=M:
+                stop=True 
+            else: 
+                def alpha_funcion(alpha):
+                    return xk - alpha*gradiente
+                alfa=optimizador(f,e2)
+                x_k1= xk - alfa * gradiente#Punto siguiente a xk
+                if np.linalg.norm((x_k1-xk))/ (np.linalg.norm(xk) + 0.0000001 )<= e2:
+                    stop=True 
+                else:
+                    k+=1
+                    xk=x_k1
+        return xk
