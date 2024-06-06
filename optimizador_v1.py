@@ -229,7 +229,7 @@ class cauchy_6_junio:#Esta es la clase nada mas para entregar la tarea a tiempo
         k=0
         x=self.a
         if x - abs(self.epsilon)>= self.funcion(x) and self.funcion(x) >= self.funcion(x + abs(self.epsilon)):
-            delta=abs(self.epsilon)
+            delta=abs(self.epsilon)#
         elif x - abs(self.epsilon)<= self.funcion(x) and self.funcion(x) <= self.funcion(x + abs(delta)):
             delta=delta
         
