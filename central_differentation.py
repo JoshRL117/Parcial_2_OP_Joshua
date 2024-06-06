@@ -1,6 +1,8 @@
 import numpy as np 
 
 def gradiente_calculation(x,delta,f):
+    if delta == None: 
+        delta=0.00001
     vector_f1_prim=[]
     x_work=np.array(x)
     x_work_f=x_work.astype(np.float64)
@@ -91,10 +93,11 @@ def hessian_matrix(x,delt,f):# x es el vector de variables
 def himmelblau(p):
     return (p[0]**2 + p[1] - 11)**2 + (p[0] + p[1]**2 - 7)**2
 
-delt=0.01
-entrada=[1,1]
-print(gradiente_calculation(entrada,delt,himmelblau))
-print(hessian_matrix(entrada,delt,himmelblau))
+if __name__ == 'main':
+    delt=0.01
+    entrada=[1,1]
+    print(gradiente_calculation(entrada,delt,himmelblau))
+    print(hessian_matrix(entrada,delt,himmelblau))
 
 
 
