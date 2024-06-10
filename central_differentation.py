@@ -93,7 +93,7 @@ def hessian_matrix(x,delt,f):# x es el vector de variables
 def himmelblau(p):
     return (p[0]**2 + p[1] - 11)**2 + (p[0] + p[1]**2 - 7)**2
 
-if __name__ == 'main':
+if __name__ == "__main__":
     delt=0.01
     entrada=[1,1]
     print(gradiente_calculation(entrada,delt,himmelblau))

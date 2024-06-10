@@ -1,9 +1,42 @@
 import numpy as np 
+def hessian_matrix(f,x,deltax):
+    fx=f(x)
+    N=len(x)
+    H=[]
+    for i in range(N):
+        hi=[]
+        for j in range(N):
+            print(i,j,end= "")
+            if i ==j:
+                xp= x.copy()
+                xn=x.copy()
+                xp[i]= xp[1] + deltax
+                xn[i]= xn[i] + deltax
+                hi.append((f(xp) - 2 *fx + f(xn)) / (deltax))
+            else: 
+                xpp=x.copy()
+                xpn=x.copy()
+                xnp= x.copy()
+                xnn= x.copy()
+                xpp[i]= xpp[i] + deltax
+                xpp[i]= xpp[j]+ deltax
 
+                xpn[i]= xpn[i] + deltax
+                xpn[j]= xpn[j] - deltax
+
+                xnp[i] = xnp[i] - deltax
+                xnp[j]= xnp[j] + deltax
+
+                xnn[i] = xnn[i] - deltax
+                xnn[j] = xnn[j] - deltax
+                hi.append((f(xpp) - f(xpn) - f(xnp) + f(xnn)) / (4 * deltax**2))
+        H.append(hi)
+    return H
+#Esta de arriba es la funcion del profe adan para el calculo de una matriz hessiana 
 class cauchy_6_junio:#Esta es la clase nada mas para entregar la tarea a tiempo
     def __init__(self,a,b,epsilon:float,f,iter=100):
-        self.a=float(a)
-        self.b=float(b)
+        self.a=a
+        self.b=b
         self.epsilon=epsilon
         self.funcion=f
         self.puntoinicial=a
@@ -129,50 +162,38 @@ class cauchy_6_junio:#Esta es la clase nada mas para entregar la tarea a tiempo
                 z = self.calculozensecante(x2,x1,self.funcion)
         return x1 , x2
     
-    def findregions(self,rangomin,rangomax,x1,x2):
-        print(self.funcion(x1))
-        if self.funcion(x1)> self.funcion(x2):
+    def findregions(rangomin,rangomax,x1,x2,f):
+        if f(x1)> f(x2):
             rangomin=rangomin
             rangomax=x2
-        elif self.funcion(x1)< self.funcion(x2):
+        elif f(x1)< f(x2):
             rangomin=x1
             rangomax=rangomax
-        elif self.funcion(x1)== self.funcion(x2):
+        elif f(x1)== f(x2):
             rangomin=x1
             rangomax=x2
         return rangomin,rangomax
 
-    def findregions_golden(self,fx1,fx2,rangomin,rangomax,x1,x2):
-        if fx1 > fx2:
-            rangomin=rangomin
-            rangomax=x2
-        elif fx1 < fx2:
-            rangomin=x1
-            rangomax=rangomax
-        elif fx1== fx2:
-            rangomin=x1
-            rangomax=x2
-        return rangomin,rangomax
-    def intervalstep3(self,b,x1,xm):
-        if self.funcion(x1)< self.funcion(xm):
+    def intervalstep3(b,x1,xm,f):
+        if f(x1)< f(xm):
             b=xm
             xm=x1
             return b,xm,True
         else:
             return b,xm,False
 
-    def intervalstep4(self,a,x2,xm):
-        if  self.funcion(x2)<self.funcion (xm):
+    def intervalstep4(a,x2,xm,f):
+        if  f(x2)<f (xm):
             a=xm
             xm=x2
             return a,xm,True
         else:
             return a,xm,False
 
-    def intervalstep5(self,b,a):
+    def intervalstep5(b,a,e):
         l=b-a
         #print(" Valor actual de a y b = {} , {}".format(a,b))
-        if abs(l) < self.epsilon : 
+        if abs(l) < e : 
             return False
         else:
             return True
@@ -182,27 +203,27 @@ class cauchy_6_junio:#Esta es la clase nada mas para entregar la tarea a tiempo
         l=self.b-self.a
         x1=self.a + (l/4)
         x2=self.b - (l/4)
-        a,b=self.findregions(a,b,x1,x2)
+        a,b=self.findregions(a,b,x1,x2,self.funcion)
         #Validaciones
-        endflag=self.intervalstep5(a,b)
+        endflag=self.intervalstep5(a,b,self.funcion)
         l=b-a
         while endflag:
             x1=a + (l/4)
             x2=b - l/4
             #Se obtiene las f(x) de x1 y x2 
-            b,xm,flag3=self.intervalstep3(b,x1,xm)
-            a,xm,flag4=self.intervalstep4(a,x2,xm)
+            b,xm,flag3=self.intervalstep3(b,x1,xm,self.funcion)
+            a,xm,flag4=self.intervalstep4(a,x2,xm,self.funcion)
             if flag3== True:
-                endflag=self.intervalstep5(a,b)
+                endflag=self.intervalstep5(a,b,self.epsilon)
             elif flag3==False:
-                a,xm,flag4=self.intervalstep4(a,x2,xm)
+                a,xm,flag4=self.intervalstep4(a,x2,xm,self.funcion)
             
             if flag4==True:
-                endflag=self.intervalstep5(a,b)
+                endflag=self.intervalstep5(a,b,self.epsilon)
             elif flag4==False: 
                 a=x1
                 b=x2
-                endflag=self.intervalstep5(a,b)
+                endflag=self.intervalstep5(a,b,self.epsilon)
         return xm
     def fibonacci_iterativo(n):
         fibonaccie = [0, 1]
@@ -270,32 +291,27 @@ class cauchy_6_junio:#Esta es la clase nada mas para entregar la tarea a tiempo
         while Lw> self.epsilon: 
             w2= aw + PHI* Lw
             w1=bw - PHI * Lw
-            fx1=self.w_to_x(w1)
-            fx2=self.w_to_x(w2)
-            aw,bw=self.findregions_golden(fx1,fx2,w1,w2,aw,bw)
-            print(aw, bw)
+            aw,bw=self.findregions(w1,w2,aw,bw,self.funcion)
             k+=1 
             Lw=bw-aw
-            print(Lw)
         
-        return (self.w_to_x(aw) + self.w_to_x(bw))/2 
-    def gradiente_calculation(self,x,delta=float(0.001)):
+        return (self.funcion(aw,self.a,self.b) + self.funcion(bw,self.a,self.b))/2 
+    def gradiente_calculation(self,x,delta=0.001):
         vector_f1_prim=[]
         x_work=np.array(x)
         x_work_f=x_work.astype(np.float64)
         if isinstance(delta,int) or isinstance(delta,float):
-            print("X_no es arreglo")
             for i in range(len(x_work_f)):
                 point=np.array(x_work_f,copy=True)
-                vector_f1_prim.append(self.primeraderivadaop(point,i,delta))
+                vector_f1_prim.append(self.primeraderivadaop(point,i,delta,self.funcion))
             return vector_f1_prim
         else:
             for i in range(len(x_work_f)):
                 point=np.array(x_work_f,copy=True)
-                vector_f1_prim.append(self.primeraderivadaop(point,i,delta[i]))
+                vector_f1_prim.append(self.primeraderivadaop(point,i,delta[i],self.funcion))
             return vector_f1_prim
 
-    def primeraderivadaop(self,x,i,delta):
+    def primeraderivadaop(x,i,delta,f):
         mof=x[i]
         p=np.array(x,copy=True)
         p2=np.array(x,copy=True)
@@ -303,7 +319,7 @@ class cauchy_6_junio:#Esta es la clase nada mas para entregar la tarea a tiempo
         nump2 =mof - delta
         p[i]= nump1
         p2[i]=nump2
-        numerador=self.funcion(p) - self.funcion(p2)
+        numerador=f(p) - f(p2)
         return numerador / (2 * delta) 
     
     def optimizer(self,name):
@@ -327,11 +343,10 @@ class cauchy_6_junio:#Esta es la clase nada mas para entregar la tarea a tiempo
     def cauchy(self,e1,optimizador):#e son los epsilon y M es el numero de iteraciones 
         stop=False
         opt=self.optimizer(optimizador)
-        xk=np.array([self.a, self.b])
+        xk=self.a
         k=0
         while not stop: 
-            gradiente=np.array(self.gradiente_calculation(xk))
-            print(gradiente)
+            gradiente=np.array(self.gradiente_calculation(xk,self.funcion))
             if np.linalg.norm(gradiente)< e1 or k >=self.iteracion:
                 stop=True 
             else:
@@ -344,15 +359,3 @@ class cauchy_6_junio:#Esta es la clase nada mas para entregar la tarea a tiempo
                     k+=1
                     xk=x_k1
         return xk
-
-if __name__== "__main__":
-    def himmelblau(p):
-        return (p[0]**2 + p[1] - 11)**2 + (p[0] + p[1]**2 - 7)**2
-    
-    a=0.0
-    b=1.0
-    e=0.001
-    opt=cauchy_6_junio(a,b,e,himmelblau)
-    print((opt.funcion))
-    print(opt.cauchy(e,'golden'))
-    #La salida es de 2.9 
