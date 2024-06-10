@@ -263,19 +263,19 @@ class cauchy_6_junio:#Esta es la clase nada mas para entregar la tarea a tiempo
             Lw=bw-aw
         
         return (self.funcion(aw,self.a,self.b) + self.funcion(bw,self.a,self.b))/2 
-    def gradiente_calculation(self,x,f,delta=0.001):
+    def gradiente_calculation(self,x,delta=0.001):
         vector_f1_prim=[]
         x_work=np.array(x)
         x_work_f=x_work.astype(np.float64)
         if isinstance(delta,int) or isinstance(delta,float):
             for i in range(len(x_work_f)):
                 point=np.array(x_work_f,copy=True)
-                vector_f1_prim.append(self.primeraderivadaop(point,i,delta,f))
+                vector_f1_prim.append(self.primeraderivadaop(point,i,delta,self.funcion))
             return vector_f1_prim
         else:
             for i in range(len(x_work_f)):
                 point=np.array(x_work_f,copy=True)
-                vector_f1_prim.append(self.primeraderivadaop(point,i,delta[i],f))
+                vector_f1_prim.append(self.primeraderivadaop(point,i,delta[i],self.funcion))
             return vector_f1_prim
 
     def primeraderivadaop(x,i,delta,f):
@@ -333,5 +333,5 @@ if __name__== 'main':
     a=0
     b=1
     e=0.001
-    opt=cauchy_6_junio()
+    opt=cauchy_6_junio(a,b,e,himmelblau)
     print("HELLO WORLD")
