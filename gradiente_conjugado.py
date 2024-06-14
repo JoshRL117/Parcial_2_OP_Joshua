@@ -236,7 +236,7 @@ class cauchy_6_junio:#Esta es la clase nada mas para entregar la tarea a tiempo
                 #print(" Valor actual de a y b = {} , {}".format(a,b))
             k+=1
         
-        return (a + b) /2 
+        return a , b
     def boundingphase(self):
         k=0
         x=self.a
@@ -322,73 +322,9 @@ class cauchy_6_junio:#Esta es la clase nada mas para entregar la tarea a tiempo
             return self.metodosecante
         elif name == 'biseccion':#7
             return self.biseccionmethod 
-        
-    
-    def segundaderivadaop(self,x,i,delta):
-        mof=x[i]
-        p=np.array(x,copy=True)
-        p2=np.array(x,copy=True)
-        nump1=mof + delta
-        nump2 =mof - delta
-        p[i]= nump1
-        p2[i]=nump2
-        numerador=self.funcion(p) - (2 * self.funcion(x)) +  self.funcion(p2)
-        return numerador / (delta**2) 
-
-    def derivadadodadoop(self,x,index_principal,index_secundario,delta):
-        mof=x[index_principal]
-        mof2=x[index_secundario]
-        p=np.array(x,copy=True)
-        p2=np.array(x,copy=True)
-        p3=np.array(x,copy=True)
-        p4=np.array(x,copy=True)
-        if isinstance(delta,int) or isinstance(delta,float):#Cuando delta es un solo valor y no un arreglo 
-            mod1=mof + delta
-            mod2=mof - delta
-            mod3=mof2 + delta
-            mod4=mof2 - delta
-            p[index_principal]=mod1
-            p[index_secundario]=mod3
-            p2[index_principal]=mod1
-            p2[index_secundario]=mod4
-            p3[index_principal]=mod2
-            p3[index_secundario]=mod3
-            p4[index_principal]=mod2
-            p4[index_secundario]=mod4
-            numerador=((self.funcion(p)) - self.funcion(p2) - self.funcion(p3) + self.funcion(p4))
-            return numerador / (4*delta)
-        else:#delta si es un arreglo 
-            mod1=mof + delta[index_principal]
-            mod2=mof - delta[index_principal]
-            mod3=mof2 + delta[index_secundario]
-            mod4=mof2 - delta[index_secundario]
-            p[index_principal]=mod1
-            p[index_secundario]=mod3
-            p2[index_principal]=mod1
-            p2[index_secundario]=mod4
-            p3[index_principal]=mod2
-            p3[index_secundario]=mod3
-            p4[index_principal]=mod2
-            p4[index_secundario]=mod4
-            numerador=((self.funcion(p)) - self.funcion(p2) - self.funcion(p3) + self.funcion(p4))
-            return numerador / (4*delta)
-
-        
-    def hessian_matrix(self,x,delt= float(0.001)):# x es el vector de variables
-        matrix_f2_prim=[([0]*len(x)) for i in range(len(x))]
-        x_work=np.array(x)
-        x_work_f=x_work.astype(np.float64)
-        for i in range(len(x)):
-            point=np.array(x_work_f,copy=True)
-            for j in range(len(x)):
-                if i == j:
-                    matrix_f2_prim[i][j]=self.segundaderivadaop(point,i,delt)
-                else:
-                    matrix_f2_prim[i][j]=self.derivadadodadoop(point,i,j,delt)
-        return matrix_f2_prim
 
 
-    def newton_multvariable(self,e1,optimizador):#e son los epsilon y M es el numero de iteraciones 
+    def cauchy(self,e1,optimizador):#e son los epsilon y M es el numero de iteraciones 
         stop=False
         opt=self.optimizer(optimizador)
         xk=np.array([self.a, self.b])
@@ -396,14 +332,12 @@ class cauchy_6_junio:#Esta es la clase nada mas para entregar la tarea a tiempo
         while not stop: 
             gradiente=np.array(self.gradiente_calculation(xk))
             print(gradiente)
-            hessiana=self.hessian_matrix(xk)
             if np.linalg.norm(gradiente)< e1 or k >=self.iteracion:
                 stop=True 
             else:
                 #Es para que este epsilon sea el de los optimizadores  
                 alfa=opt()
-                x_k1= xk - alfa * np.dot(np.linalg.inv(hessiana),gradiente)
-                
+                x_k1= xk - alfa * gradiente#Punto siguiente a xk
                 if np.linalg.norm((x_k1-xk))/ (np.linalg.norm(xk) + 0.0000001 )<= self.epsilon:
                     stop=True 
                 else:
@@ -415,10 +349,10 @@ if __name__== "__main__":
     def himmelblau(p):
         return (p[0]**2 + p[1] - 11)**2 + (p[0] + p[1]**2 - 7)**2
     
-    a=0
-    b=1
+    a=0.0
+    b=1.0
     e=0.001
     opt=cauchy_6_junio(a,b,e,himmelblau)
     print((opt.funcion))
-    print(opt.newton_multvariable(e,'golden'))
+    print(opt.cauchy(e,'golden'))
     #La salida es de 2.9 
