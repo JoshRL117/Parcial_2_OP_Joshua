@@ -344,6 +344,40 @@ class cauchy_6_junio:#Esta es la clase nada mas para entregar la tarea a tiempo
                     k+=1
                     xk=x_k1
         return xk
+    
+    def alfa_dadopunto(self,x_inicial,x_siguiente,optimizador ='golden'):
+        alfa=optimizador()
+        if (self.funcion(x_inicial + (alfa * x_siguiente))> self.epsilon ):
+            return alfa
+        
+        else:
+            return 0.5
+    
+    def grandiente_conjugado(self,e2,e3,optimizador):
+        optimizador=self.optimizer(optimizador)
+        x_inicial=np.array([self.a,self.b])
+        gradiente=np.array(self.gradiente_calculation(x_inicial))
+        s_inicial=gradiente * -1
+        alfa_actual=self.alfa_dadopunto(x_inicial,s_inicial,optimizador)
+
+        x_actual= x_inicial + (alfa_actual * s_inicial)
+
+        x_siguiente= (-1 * self.gradiente_calculation(x_actual)) + ((np.linalg.norm(self.gradiente_calculation(x_actual))**2)/
+                                                              (np.linalg.norm(self.gradiente_calculation(x_inicial))**2)) * s_inicial
+        
+        while ((np.linalg.norm(x_siguiente - x_actual))/np.linalg(x_actual)) >= e2 or  np.linalg.norm(self.gradiente_calculation(x_siguiente)) >= e3:
+            x_actual=x_siguiente
+            gradiente=np.array(self.gradiente_calculation(x_actual))
+            s_actual=gradiente * -1
+            alfa_actual=self.alfa_dadopunto(x_actual,s_actual,optimizador)
+            x_actual_nuevo= x_actual + (alfa_actual * s_actual)
+
+            x_siguiente= (-1 * self.gradiente_calculation(x_actual_nuevo)) + ((np.linalg.norm(self.gradiente_calculation(x_actual_nuevo))**2)/
+                                                                (np.linalg.norm(self.gradiente_calculation(x_actual))**2)) * s_actual
+        return x_siguiente
+    
+
+        
 
 if __name__== "__main__":
     def himmelblau(p):
@@ -354,5 +388,5 @@ if __name__== "__main__":
     e=0.001
     opt=cauchy_6_junio(a,b,e,himmelblau)
     print((opt.funcion))
-    print(opt.cauchy(e,'golden'))
+    print(opt.grandiente_conjugado(e,e,'golden'))
     #La salida es de 2.9 
