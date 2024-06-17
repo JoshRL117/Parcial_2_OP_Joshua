@@ -180,5 +180,5 @@ class objective_f_nr:
 if __name__ == "__main__":
     data = [[0, 10], [0, 10]]
     obj = objective_f_nr(data)
-    #obj.show('shekel')
-    print(obj.himmelblau([2.9715,1.6279]))
+    obj.show('himmelblau')
+    #print(obj.himmelblau([2.9715,1.6279]))

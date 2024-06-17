@@ -90,14 +90,25 @@ def hessian_matrix(x,delt,f):# x es el vector de variables
                 matrix_f2_prim[i][j]=derivadadodadoop(point,i,j,delt,f)
     return matrix_f2_prim
 
+def minormax(hessian):
+    det=np.linalg.det(hessian)
+    f_xx=hessian[0][0]
+    if det > 0 and f_xx > 0:
+        return "Mínimo local"
+    elif det > 0 and f_xx < 0:
+        return "Máximo local"
+    elif det < 0:
+        return "Punto de silla"
+    else:
+        return "Criterio inconcluso"
 def himmelblau(p):
     return (p[0]**2 + p[1] - 11)**2 + (p[0] + p[1]**2 - 7)**2
 
 if __name__ == "__main__":
     delt=0.01
     entrada=[1,1]
-    print(gradiente_calculation(entrada,delt,himmelblau))
-    print(hessian_matrix(entrada,delt,himmelblau))
-
+    g=(gradiente_calculation(entrada,delt,himmelblau))
+    h=(hessian_matrix(entrada,delt,himmelblau))
+    print(minormax(h))
 
 

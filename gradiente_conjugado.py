@@ -130,7 +130,6 @@ class cauchy_6_junio:#Esta es la clase nada mas para entregar la tarea a tiempo
         return x1 , x2
     
     def findregions(self,rangomin,rangomax,x1,x2):
-        print(self.funcion(x1))
         if self.funcion(x1)> self.funcion(x2):
             rangomin=rangomin
             rangomax=x2
@@ -236,7 +235,7 @@ class cauchy_6_junio:#Esta es la clase nada mas para entregar la tarea a tiempo
                 #print(" Valor actual de a y b = {} , {}".format(a,b))
             k+=1
         
-        return a , b
+        return (a + b)/2
     def boundingphase(self):
         k=0
         x=self.a
@@ -257,7 +256,7 @@ class cauchy_6_junio:#Esta es la clase nada mas para entregar la tarea a tiempo
             x_nuevo=x_anterior + ((2**k)* delta)
         
         print("Los puntos actuales son {} y {} ".format(x_anterior,x_nuevo))
-        return x_ant,x_nuevo
+        return (x_ant +x_nuevo)/2
         
     def w_to_x(self, w:float )-> float:
             return w * (self.b-self.a) + self.a
@@ -273,10 +272,8 @@ class cauchy_6_junio:#Esta es la clase nada mas para entregar la tarea a tiempo
             fx1=self.w_to_x(w1)
             fx2=self.w_to_x(w2)
             aw,bw=self.findregions_golden(fx1,fx2,w1,w2,aw,bw)
-            print(aw, bw)
             k+=1 
             Lw=bw-aw
-            print(Lw)
         
         return (self.w_to_x(aw) + self.w_to_x(bw))/2 
     def gradiente_calculation(self,x,delta=float(0.001)):
@@ -284,7 +281,7 @@ class cauchy_6_junio:#Esta es la clase nada mas para entregar la tarea a tiempo
         x_work=np.array(x)
         x_work_f=x_work.astype(np.float64)
         if isinstance(delta,int) or isinstance(delta,float):
-            print("X_no es arreglo")
+            #print("X_no es arreglo")
             for i in range(len(x_work_f)):
                 point=np.array(x_work_f,copy=True)
                 vector_f1_prim.append(self.primeraderivadaop(point,i,delta))
@@ -331,7 +328,6 @@ class cauchy_6_junio:#Esta es la clase nada mas para entregar la tarea a tiempo
         k=0
         while not stop: 
             gradiente=np.array(self.gradiente_calculation(xk))
-            print(gradiente)
             if np.linalg.norm(gradiente)< e1 or k >=self.iteracion:
                 stop=True 
             else:
@@ -345,48 +341,62 @@ class cauchy_6_junio:#Esta es la clase nada mas para entregar la tarea a tiempo
                     xk=x_k1
         return xk
     
-    def alfa_dadopunto(self,x_inicial,x_siguiente,optimizador ='golden'):
+    def alfa_dadopunto(self,initial_point,optimizador ='golden'):#Este retorna el alfa donde el punto sea un minimo para gradiente conjugado
         alfa=optimizador()
-        if (self.funcion(x_inicial + (alfa * x_siguiente))> self.epsilon ):
-            return alfa
-        
+        return alfa
+    def minormax(self,hessian):#Aqui encuentre que es el punto 
+        det=np.linalg.det(hessian)
+        f_xx=hessian[0][0]
+        if det > 0 and f_xx > 0:
+            return "Mínimo local"
+        elif det > 0 and f_xx < 0:
+            return "Máximo local"
+        elif det < 0:
+            return "Punto de silla"
         else:
-            return 0.5
+            return "Criterio inconcluso"
     
-    def grandiente_conjugado(self,e2,e3,optimizador):
+    def grandiente_conjugado(self,e2,e3,optimizador):#e2 y e3 son los otros optimizadores 
         optimizador=self.optimizer(optimizador)
         x_inicial=np.array([self.a,self.b])
         gradiente=np.array(self.gradiente_calculation(x_inicial))
         s_inicial=gradiente * -1
-        alfa_actual=self.alfa_dadopunto(x_inicial,s_inicial,optimizador)
+        alfa_actual=self.alfa_dadopunto(x_inicial,optimizador)
 
         x_actual= x_inicial + (alfa_actual * s_inicial)
-
-        x_siguiente= (-1 * self.gradiente_calculation(x_actual)) + ((np.linalg.norm(self.gradiente_calculation(x_actual))**2)/
-                                                              (np.linalg.norm(self.gradiente_calculation(x_inicial))**2)) * s_inicial
-        
-        while ((np.linalg.norm(x_siguiente - x_actual))/np.linalg(x_actual)) >= e2 or  np.linalg.norm(self.gradiente_calculation(x_siguiente)) >= e3:
+        v=(np.linalg.norm(self.gradiente_calculation(x_actual))**2/np.linalg.norm(self.gradiente_calculation(x_inicial))**2)
+        #print(v*s_inicial)
+        x_siguiente= ((-1 * np.array(self.gradiente_calculation(x_actual)))) + (((np.linalg.norm(self.gradiente_calculation(x_actual))**2)/
+                                                              (np.linalg.norm(self.gradiente_calculation(x_inicial))**2)) * s_inicial)
+        while ((np.linalg.norm(x_siguiente - x_actual))/np.linalg.norm(x_actual)) >= e2 or  np.linalg.norm(self.gradiente_calculation(x_siguiente)) >= e3:
+            print("Sin terminar")
+            #print((np.linalg.norm(x_siguiente - x_actual))/np.linalg.norm(x_actual))
             x_actual=x_siguiente
+            x_siguiente=0
             gradiente=np.array(self.gradiente_calculation(x_actual))
             s_actual=gradiente * -1
-            alfa_actual=self.alfa_dadopunto(x_actual,s_actual,optimizador)
+            alfa_actual=self.alfa_dadopunto(x_actual,optimizador)
             x_actual_nuevo= x_actual + (alfa_actual * s_actual)
-
-            x_siguiente= (-1 * self.gradiente_calculation(x_actual_nuevo)) + ((np.linalg.norm(self.gradiente_calculation(x_actual_nuevo))**2)/
-                                                                (np.linalg.norm(self.gradiente_calculation(x_actual))**2)) * s_actual
+            #print(x_actual_nuevo)
+            x_siguiente= (-1 * np.array(self.gradiente_calculation(x_actual_nuevo))) + ((((np.linalg.norm(self.gradiente_calculation(x_actual_nuevo))**2)/
+                                                                (np.linalg.norm(self.gradiente_calculation(x_actual))**2))) * s_actual)
+            x_actual= x_actual_nuevo
+            print(x_siguiente)
+            #print((np.linalg.norm(x_siguiente - x_actual))/np.linalg.norm(x_actual))
+            print(np.linalg.norm(self.gradiente_calculation(x_siguiente)))
         return x_siguiente
     
 
         
 
 if __name__== "__main__":
+    import matplotlib.pyplot as plt
     def himmelblau(p):
         return (p[0]**2 + p[1] - 11)**2 + (p[0] + p[1]**2 - 7)**2
     
-    a=0.0
-    b=1.0
+    a=0
+    b=2
     e=0.001
     opt=cauchy_6_junio(a,b,e,himmelblau)
     print((opt.funcion))
     print(opt.grandiente_conjugado(e,e,'golden'))
-    #La salida es de 2.9 
