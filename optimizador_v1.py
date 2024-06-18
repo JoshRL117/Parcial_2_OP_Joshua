@@ -418,37 +418,36 @@ class Optimizador:
     def s_sig_gradcon(self, xac, xant, s):
         gradiente_ac = np.array(self.gradiente_calculation(xac))
         gradiente_ant = np.array(self.gradiente_calculation(xant))
-        part1 = -gradiente_ac
-        part2 = (np.linalg.norm(gradiente_ac)**2) / (np.linalg.norm(gradiente_ant)**2)
-        part3 = part2 * s
-        return part1 + part3
+        beta = np.dot(gradiente_ac, gradiente_ac) / np.dot(gradiente_ant, gradiente_ant)
+        return -gradiente_ac + beta * s
+
 
     def grandiente_conjugado(self, e2, e3, optimizador):
-        #Inicializacion 
-        x_inicial=self.variables
-        s_inicial=self.gradiente_calculation(x_inicial)
-        self.gradiente=-s_inicial
-        opt=self.optimizer(optimizador)
-        alfa_inicial=opt()
-        x_nuevo=x_inicial * alfa_inicial* s_inicial
-        s_nuevo=self.s_sig_gradcon(x_nuevo,x_inicial,s_inicial)
-        self.gradiente=s_nuevo
-        alfa_nuevo=opt()
-        x_ant=x_nuevo
-        x_nuevo=x_ant * alfa_nuevo* s_nuevo
+        x_inicial = self.variables
+        s_inicial = -self.gradiente_calculation(x_inicial)
+        opt = self.optimizer(optimizador)
+        alfa_inicial = opt()
+        x_nuevo = x_inicial + alfa_inicial * s_inicial
+        s_nuevo = self.s_sig_gradcon(x_nuevo, x_inicial, s_inicial)
+        self.gradiente = s_nuevo 
+        alfa_nuevo = opt()
+        x_ant = x_nuevo
+        x_nuevo = x_ant + alfa_nuevo * s_nuevo
         print(x_nuevo)
-        k=0
-        #fin de la primera iteracion
-        while ((np.linalg.norm(x_nuevo-x_ant)/np.linalg.norm(x_ant)) >= e2) or (np.linalg.norm(self.gradiente_calculation(x_nuevo))>=e3) or k < self.iteracion: #Condiciones de paro
-            s_ant=s_nuevo
-            s_nuevo=self.s_sig_gradcon(x_nuevo,x_ant,s_ant)
-            self.gradiente=s_nuevo
-            #print(self.gradiente)
-            alfa_nuevo=opt()
-            x_ant=x_nuevo
-            x_nuevo=x_ant * alfa_nuevo* s_nuevo
+        k = 0
+
+        while (np.linalg.norm(x_nuevo - x_ant) / np.linalg.norm(x_ant) >= e2) \
+                or (np.linalg.norm(self.gradiente_calculation(x_nuevo)) >= e3) \
+                or k < self.iteracion:
+            s_ant = s_nuevo
+            s_nuevo = self.s_sig_gradcon(x_nuevo, x_ant, s_ant)
+            self.gradiente = s_nuevo
+            alfa_nuevo = opt()
+            x_ant = x_nuevo
+            x_nuevo = x_ant + alfa_nuevo * s_nuevo
             print(x_nuevo)
-            k+=1
+            k += 1
+
         return x_nuevo
 
 if __name__ == "__main__":
