@@ -109,6 +109,6 @@ if __name__ == "__main__":
     entrada=[1,1]
     g=(gradiente_calculation(entrada,delt,himmelblau))
     h=(hessian_matrix(entrada,delt,himmelblau))
-    print(minormax(h))
+    print(g)
 
 
