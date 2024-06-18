@@ -316,21 +316,133 @@ class Optimizador:
         k = 0
         while not stop:
             gradiente = np.array(self.gradiente_calculation(xk))
-            print("Este es el gradiente",gradiente)
             self.gradiente=gradiente
             if np.linalg.norm(gradiente) < e1 or k >= self.iteracion:
                 stop = True
             else:
                 alfa = opt()
-                print("Alfa",alfa)
                 x_k1 = xk - (alfa * gradiente)
-                print("Este es el punto nuevo",x_k1)
                 if np.linalg.norm((x_k1 - xk)) / (np.linalg.norm(xk) + 0.0000001) <= self.epsilon:
                     stop = True
                 else:
                     k += 1
                     xk = x_k1
         return xk
+    def segundaderivadaop(self,x,i,delta):
+        mof=x[i]
+        p=np.array(x,copy=True)
+        p2=np.array(x,copy=True)
+        nump1=mof + delta
+        nump2 =mof - delta
+        p[i]= nump1
+        p2[i]=nump2
+        numerador=self.funcion(p) - (2 * self.funcion(x)) +  self.funcion(p2)
+        return numerador / (delta**2) 
+
+    def derivadadodadoop(self,x,index_principal,index_secundario,delta):
+        mof=x[index_principal]
+        mof2=x[index_secundario]
+        p=np.array(x,copy=True)
+        p2=np.array(x,copy=True)
+        p3=np.array(x,copy=True)
+        p4=np.array(x,copy=True)
+        if isinstance(delta,int) or isinstance(delta,float):#Cuando delta es un solo valor y no un arreglo 
+            mod1=mof + delta
+            mod2=mof - delta
+            mod3=mof2 + delta
+            mod4=mof2 - delta
+            p[index_principal]=mod1
+            p[index_secundario]=mod3
+            p2[index_principal]=mod1
+            p2[index_secundario]=mod4
+            p3[index_principal]=mod2
+            p3[index_secundario]=mod3
+            p4[index_principal]=mod2
+            p4[index_secundario]=mod4
+            numerador=((self.funcion(p)) - self.funcion(p2) - self.funcion(p3) + self.funcion(p4))
+            return numerador / (4*delta)
+        else:#delta si es un arreglo 
+            mod1=mof + delta[index_principal]
+            mod2=mof - delta[index_principal]
+            mod3=mof2 + delta[index_secundario]
+            mod4=mof2 - delta[index_secundario]
+            p[index_principal]=mod1
+            p[index_secundario]=mod3
+            p2[index_principal]=mod1
+            p2[index_secundario]=mod4
+            p3[index_principal]=mod2
+            p3[index_secundario]=mod3
+            p4[index_principal]=mod2
+            p4[index_secundario]=mod4
+            numerador=((self.funcion(p)) - self.funcion(p2) - self.funcion(p3) + self.funcion(p4))
+            return numerador / (4*delta)
+
+        
+    def hessian_matrix(self,x,delt= float(0.001)):# x es el vector de variables
+        matrix_f2_prim=[([0]*len(x)) for i in range(len(x))]
+        x_work=np.array(x)
+        x_work_f=x_work.astype(np.float64)
+        for i in range(len(x)):
+            point=np.array(x_work_f,copy=True)
+            for j in range(len(x)):
+                if i == j:
+                    matrix_f2_prim[i][j]=self.segundaderivadaop(point,i,delt)
+                else:
+                    matrix_f2_prim[i][j]=self.derivadadodadoop(point,i,j,delt)
+        return matrix_f2_prim
+
+
+    def newton_multvariable(self,e1,optimizador):#e son los epsilon y M es el numero de iteraciones 
+        stop=False
+        opt=self.optimizer(optimizador)
+        xk=self.variables
+        k=0
+        while not stop: 
+            gradiente=np.array(self.gradiente_calculation(xk))
+            hessiana=self.hessian_matrix(xk)
+            if np.linalg.norm(gradiente)< e1 or k >=self.iteracion:
+                stop=True 
+            else:
+                #Es para que este epsilon sea el de los optimizadores  
+                alfa=opt()
+                x_k1= xk - (alfa * np.dot(np.linalg.inv(hessiana),gradiente))
+                
+                if np.linalg.norm((x_k1-xk))/ (np.linalg.norm(xk) + 0.0000001 )<= self.epsilon:
+                    stop=True 
+                else:
+                    k+=1
+                    xk=x_k1
+        return xk
+    
+    def grandiente_conjugado(self,e2,e3,optimizador):#e2 y e3 son los otros optimizadores 
+        optimizador=self.optimizer(optimizador)
+        x_inicial=np.array([self.a,self.b])
+        gradiente=np.array(self.gradiente_calculation(x_inicial))
+        s_inicial=gradiente * -1
+        alfa_actual=self.alfa_dadopunto(x_inicial,optimizador)
+
+        x_actual= x_inicial + (alfa_actual * s_inicial)
+        v=(np.linalg.norm(self.gradiente_calculation(x_actual))**2/np.linalg.norm(self.gradiente_calculation(x_inicial))**2)
+        #print(v*s_inicial)
+        x_siguiente= ((-1 * np.array(self.gradiente_calculation(x_actual)))) + (((np.linalg.norm(self.gradiente_calculation(x_actual))**2)/
+                                                              (np.linalg.norm(self.gradiente_calculation(x_inicial))**2)) * s_inicial)
+        while ((np.linalg.norm(x_siguiente - x_actual))/np.linalg.norm(x_actual)) >= e2 or  np.linalg.norm(self.gradiente_calculation(x_siguiente)) >= e3:
+            print("Sin terminar")
+            #print((np.linalg.norm(x_siguiente - x_actual))/np.linalg.norm(x_actual))
+            x_actual=x_siguiente
+            x_siguiente=0
+            gradiente=np.array(self.gradiente_calculation(x_actual))
+            s_actual=gradiente * -1
+            alfa_actual=self.alfa_dadopunto(x_actual,optimizador)
+            x_actual_nuevo= x_actual + (alfa_actual * s_actual)
+            #print(x_actual_nuevo)
+            x_siguiente= (-1 * np.array(self.gradiente_calculation(x_actual_nuevo))) + ((((np.linalg.norm(self.gradiente_calculation(x_actual_nuevo))**2)/
+                                                                (np.linalg.norm(self.gradiente_calculation(x_actual))**2))) * s_actual)
+            x_actual= x_actual_nuevo
+            print(x_siguiente)
+            #print((np.linalg.norm(x_siguiente - x_actual))/np.linalg.norm(x_actual))
+            print(np.linalg.norm(self.gradiente_calculation(x_siguiente)))
+        return x_siguiente
 
 if __name__ == "__main__":
     def himmelblau(p):
@@ -340,4 +452,5 @@ if __name__ == "__main__":
     e = 0.001
     opt = Optimizador(x, e, himmelblau)
     print(opt.cauchy(e, 'golden'))
+    print(opt.newton_multvariable(e,'golden'))
     #La salida debe ser de 3,2
