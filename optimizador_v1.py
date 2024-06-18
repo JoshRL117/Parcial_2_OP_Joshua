@@ -264,6 +264,7 @@ class Optimizador:
             Lw = bw - aw
         t=(bw * (b - a) + a)
         t2=(aw * (b - a) + a)
+        print(t)
         return (t2 + t)/2
 
     def gradiente_calculation(self, x, delta=0.001):
@@ -274,12 +275,12 @@ class Optimizador:
             for i in range(len(x_work_f)):
                 point = np.array(x_work_f, copy=True)
                 vector_f1_prim.append(self.primeraderivadaop(point, i, delta))
-            return vector_f1_prim 
+            return np.array(vector_f1_prim) 
         else:
             for i in range(len(x_work_f)):
                 point = np.array(x_work_f, copy=True)
                 vector_f1_prim.append(self.primeraderivadaop(point, i, delta[i]))
-            return vector_f1_prim * -1
+            return np.array(vector_f1_prim) 
 
     def primeraderivadaop(self, x, i, delta):
         mof = x[i]
@@ -414,35 +415,41 @@ class Optimizador:
                     xk=x_k1
         return xk
     
-    def grandiente_conjugado(self,e2,e3,optimizador):#e2 y e3 son los otros optimizadores 
-        optimizador=self.optimizer(optimizador)
-        x_inicial=np.array([self.a,self.b])
-        gradiente=np.array(self.gradiente_calculation(x_inicial))
-        s_inicial=gradiente * -1
-        alfa_actual=self.alfa_dadopunto(x_inicial,optimizador)
+    def s_sig_gradcon(self, xac, xant, s):
+        gradiente_ac = np.array(self.gradiente_calculation(xac))
+        gradiente_ant = np.array(self.gradiente_calculation(xant))
+        part1 = -gradiente_ac
+        part2 = (np.linalg.norm(gradiente_ac)**2) / (np.linalg.norm(gradiente_ant)**2)
+        part3 = part2 * s
+        return part1 + part3
 
-        x_actual= x_inicial + (alfa_actual * s_inicial)
-        v=(np.linalg.norm(self.gradiente_calculation(x_actual))**2/np.linalg.norm(self.gradiente_calculation(x_inicial))**2)
-        #print(v*s_inicial)
-        x_siguiente= ((-1 * np.array(self.gradiente_calculation(x_actual)))) + (((np.linalg.norm(self.gradiente_calculation(x_actual))**2)/
-                                                              (np.linalg.norm(self.gradiente_calculation(x_inicial))**2)) * s_inicial)
-        while ((np.linalg.norm(x_siguiente - x_actual))/np.linalg.norm(x_actual)) >= e2 or  np.linalg.norm(self.gradiente_calculation(x_siguiente)) >= e3:
-            print("Sin terminar")
-            #print((np.linalg.norm(x_siguiente - x_actual))/np.linalg.norm(x_actual))
-            x_actual=x_siguiente
-            x_siguiente=0
-            gradiente=np.array(self.gradiente_calculation(x_actual))
-            s_actual=gradiente * -1
-            alfa_actual=self.alfa_dadopunto(x_actual,optimizador)
-            x_actual_nuevo= x_actual + (alfa_actual * s_actual)
-            #print(x_actual_nuevo)
-            x_siguiente= (-1 * np.array(self.gradiente_calculation(x_actual_nuevo))) + ((((np.linalg.norm(self.gradiente_calculation(x_actual_nuevo))**2)/
-                                                                (np.linalg.norm(self.gradiente_calculation(x_actual))**2))) * s_actual)
-            x_actual= x_actual_nuevo
-            print(x_siguiente)
-            #print((np.linalg.norm(x_siguiente - x_actual))/np.linalg.norm(x_actual))
-            print(np.linalg.norm(self.gradiente_calculation(x_siguiente)))
-        return x_siguiente
+    def grandiente_conjugado(self, e2, e3, optimizador):
+        #Inicializacion 
+        x_inicial=self.variables
+        s_inicial=self.gradiente_calculation(x_inicial)
+        self.gradiente=-s_inicial
+        opt=self.optimizer(optimizador)
+        alfa_inicial=opt()
+        x_nuevo=x_inicial * alfa_inicial* s_inicial
+        s_nuevo=self.s_sig_gradcon(x_nuevo,x_inicial,s_inicial)
+        self.gradiente=s_nuevo
+        alfa_nuevo=opt()
+        x_ant=x_nuevo
+        x_nuevo=x_ant * alfa_nuevo* s_nuevo
+        print(x_nuevo)
+        k=0
+        #fin de la primera iteracion
+        while ((np.linalg.norm(x_nuevo-x_ant)/np.linalg.norm(x_ant)) >= e2) or (np.linalg.norm(self.gradiente_calculation(x_nuevo))>=e3) or k < self.iteracion: #Condiciones de paro
+            s_ant=s_nuevo
+            s_nuevo=self.s_sig_gradcon(x_nuevo,x_ant,s_ant)
+            self.gradiente=s_nuevo
+            #print(self.gradiente)
+            alfa_nuevo=opt()
+            x_ant=x_nuevo
+            x_nuevo=x_ant * alfa_nuevo* s_nuevo
+            print(x_nuevo)
+            k+=1
+        return x_nuevo
 
 if __name__ == "__main__":
     def himmelblau(p):
@@ -451,6 +458,7 @@ if __name__ == "__main__":
     x = [1.5,1]
     e = 0.001
     opt = Optimizador(x, e, himmelblau)
-    print(opt.cauchy(e, 'golden'))
-    print(opt.newton_multvariable(e,'golden'))
+    #print(opt.cauchy(e, 'golden'))
+    #print(opt.newton_multvariable(e,'golden'))
+    print(opt.grandiente_conjugado(e,e,'golden'))
     #La salida debe ser de 3,2
