@@ -76,33 +76,35 @@ class Optimizador:
         terminar = False
         xk = x0
         k = 0
-        alfa=0.01
-        while not terminar:
-            gradiente = np.array(self.gradiente(f, xk))
-            hessiana = self.hessian_matrix(f, xk, deltaX=0.001)
-            hessian_inv = np.linalg.inv(hessiana)
 
-            if np.linalg.norm(gradiente) < epsilon1 or k >= M:
+        while not terminar:
+            grad = np.array(self.gradiente(f, xk))
+            hessian = self.hessian_matrix(f, xk, deltaX=0.001)
+            hessian_inv = np.linalg.inv(hessian)
+
+            if np.linalg.norm(grad) < epsilon1 or k >= M:
                 terminar = True
             else:
                 def alpha_funcion(alpha):
-                    return f(xk - alpha * np.dot(hessian_inv, gradiente))
+                    return f(xk - alpha * np.dot(hessian_inv, grad))
 
-                alfa=alfa**k #self.busquedaDorada(alpha_funcion, epsilon=epsilon2, a=0.0, b=1.0) 
-                x_k1 = xk - alfa * np.dot(hessian_inv, gradiente)
+                alpha = self.busquedaDorada(alpha_funcion, epsilon=epsilon2, a=0.0, b=1.0)
+                print(alpha)
+                x_k1 = xk - alpha * np.dot(hessian_inv, grad)
 
                 if np.linalg.norm(x_k1 - xk) / (np.linalg.norm(xk) + 0.00001) <= epsilon2:
                     terminar = True
                 else:
                     k += 1
                     xk = x_k1
-        print(k)
+
         return xk
 
+# Example usage:
 def himmelblau(p):
     return (p[0]**2 + p[1] - 11)**2 + (p[0] + p[1]**2 - 7)**2
 
-x0 = np.array([1.0,1.0])
+x0 = np.array([2.0, 3.0])
 epsilon1 = 0.001
 epsilon2 = 0.001
 max_iter = 100

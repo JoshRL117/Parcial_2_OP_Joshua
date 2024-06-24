@@ -268,19 +268,14 @@ class Optimizador:
         return (t2 + t)/2
 
     def gradiente_calculation(self, x, delta=0.001):
-        vector_f1_prim = []
-        x_work = np.array(x)
-        x_work_f = x_work.astype(np.float64)
-        if isinstance(delta, int) or isinstance(delta, float):
-            for i in range(len(x_work_f)):
-                point = np.array(x_work_f, copy=True)
-                vector_f1_prim.append(self.primeraderivadaop(point, i, delta))
-            return np.array(vector_f1_prim) 
-        else:
-            for i in range(len(x_work_f)):
-                point = np.array(x_work_f, copy=True)
-                vector_f1_prim.append(self.primeraderivadaop(point, i, delta[i]))
-            return np.array(vector_f1_prim) 
+        grad = []
+        for i in range(len(x)):
+            xp = x.copy()
+            xn = x.copy()
+            xp[i] = xp[i] + delta
+            xn[i] = xn[i] - delta
+            grad.append((self.funcion(xp) - self.funcion(xn)) / (2 * delta))
+        return np.array(grad)
 
     def primeraderivadaop(self, x, i, delta):
         mof = x[i]
@@ -328,6 +323,7 @@ class Optimizador:
                 else:
                     k += 1
                     xk = x_k1
+        print(k)
         return xk
     def segundaderivadaop(self,x,i,delta):
         mof=x[i]
@@ -379,42 +375,61 @@ class Optimizador:
             return numerador / (4*delta)
 
         
-    def hessian_matrix(self,x,delt= float(0.001)):# x es el vector de variables
-        matrix_f2_prim=[([0]*len(x)) for i in range(len(x))]
-        x_work=np.array(x)
-        x_work_f=x_work.astype(np.float64)
-        for i in range(len(x)):
-            point=np.array(x_work_f,copy=True)
-            for j in range(len(x)):
-                if i == j:
-                    matrix_f2_prim[i][j]=self.segundaderivadaop(point,i,delt)
-                else:
-                    matrix_f2_prim[i][j]=self.derivadadodadoop(point,i,j,delt)
-        return matrix_f2_prim
+    def hessian_matrix(self, x):
+            fx = self.funcion(x)
+            N = len(x)
+            H = []
+            for i in range(N):
+                hi = []
+                for j in range(N):
+                    if i == j:
+                        xpp = x.copy()
+                        xnn = x.copy()
+                        xpp[i] = xpp[i] + self.epsilon
+                        xnn[i] = xnn[i] - self.epsilon
+                        hi.append((self.funcion(xpp) - 2 * fx + self.funcion(xnn)) / (self.epsilon**2))
+                    else:
+                        xpp = x.copy()
+                        xpn = x.copy()
+                        xnp = x.copy()
+                        xnn = x.copy()
+                        xpp[i] = xpp[i] + self.epsilon
+                        xpp[j] = xpp[j] + self.epsilon
+                        xpn[i] = xpn[i] + self.epsilon
+                        xpn[j] = xpn[j] - self.epsilon
+                        xnp[i] = xnp[i] - self.epsilon
+                        xnp[j] = xnp[j] + self.epsilon
+                        xnn[i] = xnn[i] - self.epsilon
+                        xnn[j] = xnn[j] - self.epsilon
+                        hi.append((self.funcion(xpp) - self.funcion(xpn) - self.funcion(xnp) + self.funcion(xnn)) / (4 * self.epsilon**2))
+                H.append(hi)
+            return H
 
 
-    def newton_multvariable(self,e1,optimizador):#e son los epsilon y M es el numero de iteraciones 
-        stop=False
-        opt=self.optimizer(optimizador)
-        xk=self.variables
-        k=0
+    def newton_multvariable(self, e1, optimizador):
+        stop = False
+        opt = self.optimizer(optimizador)
+        xk = self.variables
+        k = 0
         while not stop: 
-            gradiente=np.array(self.gradiente_calculation(xk))
-            hessiana=self.hessian_matrix(xk)
-            if np.linalg.norm(gradiente)< e1 or k >=self.iteracion:
-                stop=True 
+            gradiente = np.array(self.gradiente_calculation(xk))
+            hessiana = self.hessian_matrix(xk)
+            invhes=np.linalg.inv(hessiana)
+            self.gradiente=np.dot(invhes,gradiente)
+            if np.linalg.norm(gradiente) < e1 or k >= self.iteracion:
+                stop = True 
             else:
-                #Es para que este epsilon sea el de los optimizadores  
-                alfa=opt()
-                x_k1= xk - (alfa * np.dot(np.linalg.inv(hessiana),gradiente))
-                
-                if np.linalg.norm((x_k1-xk))/ (np.linalg.norm(xk) + 0.0000001 )<= self.epsilon:
-                    stop=True 
+                alfa = opt()
+                print(alfa)
+                print(alfa)
+                x_k1 = xk - alfa * np.dot(invhes, gradiente)
+                if np.linalg.norm((x_k1 - xk)) / (np.linalg.norm(xk) + 0.0000001) <= self.epsilon:
+                    stop = True 
                 else:
-                    k+=1
-                    xk=x_k1
+                    k += 1
+                    xk = x_k1
         return xk
-    
+
     def s_sig_gradcon(self, xac, xant, s):
         gradiente_ac = np.array(self.gradiente_calculation(xac))
         gradiente_ant = np.array(self.gradiente_calculation(xant))
@@ -423,38 +438,38 @@ class Optimizador:
 
 
     def grandiente_conjugado(self, e2, e3, optimizador):
+        fijo=0.01
         x_inicial = self.variables
         s_inicial = -self.gradiente_calculation(x_inicial)
         opt = self.optimizer(optimizador)
-        alfa_inicial = opt()
+        alfa_inicial = fijo
         x_nuevo = x_inicial + alfa_inicial * s_inicial
         s_nuevo = self.s_sig_gradcon(x_nuevo, x_inicial, s_inicial)
         self.gradiente = s_nuevo 
-        alfa_nuevo = opt()
+        alfa_nuevo = fijo
         x_ant = x_nuevo
         x_nuevo = x_ant + alfa_nuevo * s_nuevo
         print(x_nuevo)
-        k = 0
+        k = 1
 
         while (np.linalg.norm(x_nuevo - x_ant) / np.linalg.norm(x_ant) >= e2) \
                 or (np.linalg.norm(self.gradiente_calculation(x_nuevo)) >= e3) \
-                or k < self.iteracion:
+                or k <= self.iteracion:
             s_ant = s_nuevo
             s_nuevo = self.s_sig_gradcon(x_nuevo, x_ant, s_ant)
             self.gradiente = s_nuevo
-            alfa_nuevo = opt()
+            alfa_nuevo = alfa_nuevo**k
             x_ant = x_nuevo
             x_nuevo = x_ant + alfa_nuevo * s_nuevo
             print(x_nuevo)
             k += 1
-
         return x_nuevo
 
 if __name__ == "__main__":
     def himmelblau(p):
         return (p[0]**2 + p[1] - 11)**2 + (p[0] + p[1]**2 - 7)**2
     
-    x = [1.5,1]
+    x = [1,1]
     e = 0.001
     opt = Optimizador(x, e, himmelblau)
     #print(opt.cauchy(e, 'golden'))

@@ -74,7 +74,7 @@ def derivadadodadoop(x,index_principal,index_secundario,delta,f):
         p4[index_principal]=mod2
         p4[index_secundario]=mod4
         numerador=((f(p)) - f(p2) - f(p3) + f(p4))
-        return numerador / (4*(delta**2))
+        return numerador / (4*(delta))
 
     
 def hessian_matrix(x,delt,f):# x es el vector de variables
