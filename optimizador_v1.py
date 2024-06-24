@@ -457,7 +457,7 @@ if __name__ == "__main__":
     x = [1.5,1]
     e = 0.001
     opt = Optimizador(x, e, himmelblau)
-    #print(opt.cauchy(e, 'golden'))
+    print(opt.cauchy(e, 'golden'))
     #print(opt.newton_multvariable(e,'golden'))
     #print(opt.grandiente_conjugado(e,e,'golden'))
     #La salida debe ser de 3,2

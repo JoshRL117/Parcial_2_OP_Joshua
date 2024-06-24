@@ -74,7 +74,7 @@ def derivadadodadoop(x,index_principal,index_secundario,delta,f):
         p4[index_principal]=mod2
         p4[index_secundario]=mod4
         numerador=((f(p)) - f(p2) - f(p3) + f(p4))
-        return numerador / (4*delta)
+        return numerador / (4*(delta**2))
 
     
 def hessian_matrix(x,delt,f):# x es el vector de variables
@@ -105,10 +105,11 @@ def himmelblau(p):
     return (p[0]**2 + p[1] - 11)**2 + (p[0] + p[1]**2 - 7)**2
 
 if __name__ == "__main__":
-    delt=0.01
+    delt=0.001
     entrada=[1,1]
     g=(gradiente_calculation(entrada,delt,himmelblau))
     h=(hessian_matrix(entrada,delt,himmelblau))
     print(g)
+    print(h)
 
 
