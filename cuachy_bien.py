@@ -41,7 +41,7 @@ def busquedaDorada(funcion, epsilon: float, a: float = 0, b: float = 1) -> float
 
     return (w_to_x(aw, a, b) + w_to_x(bw, a, b)) / 2
 
-def cauchy(funcion, x0: np.ndarray, epsilon1: float, epsilon2: float, M: int) -> np.ndarray:
+def cauchy(funcion, x0: np.ndarray, epsilon1: float, epsilon2: float, M: int,a:float):
     terminar = False
     xk = x0
     k = 0
@@ -55,17 +55,18 @@ def cauchy(funcion, x0: np.ndarray, epsilon1: float, epsilon2: float, M: int) ->
             def alpha_funcion(alpha):
                 return funcion(xk - alpha * grad)
             
-            alpha = busquedaDorada(alpha_funcion, epsilon=epsilon2, a=0, b=1.0)
+            alpha = a#busquedaDorada(alpha_funcion, epsilon=epsilon2, a=0, b=1.0)
             xk_1 = xk - alpha * grad
             if np.linalg.norm(xk_1 - xk) / (np.linalg.norm(xk) + 0.0001) < epsilon2:
                 terminar = True
             xk = xk_1
             k += 1
-    
+    print(k)
     return xk
+
 def himmelblau(p):
     return (p[0]**2 + p[1] - 11)**2 + (p[0] + p[1]**2 - 7)**2
 
 x0 = np.array([1.0,1.0])
-resultado = cauchy(himmelblau, x0, epsilon1=0.001, epsilon2=0.001, M=100)
+resultado = cauchy(himmelblau, x0, epsilon1=0.001, epsilon2=0.001, M=100,a=0.01)
 print(f"El mínimo se encuentra en x = {resultado}")

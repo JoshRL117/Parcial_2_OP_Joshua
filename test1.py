@@ -67,7 +67,7 @@ def gradiente(f, x, deltaX=0.001):
         grad.append((f(xp) - f(xn)) / (2 * deltaX))
     return np.array(grad)
 
-def newton(f, x0, epsilon1, epsilon2, M):
+def newton(f, x0, epsilon1, epsilon2, M,a):
     terminar = False
     xk = x0
     k = 0
@@ -83,7 +83,7 @@ def newton(f, x0, epsilon1, epsilon2, M):
             def alpha_funcion(alpha):
                 return f(xk - alpha * np.dot(hessian_inv, grad))
 
-            alpha = busquedaDorada(alpha_funcion, epsilon=epsilon2, a=0.0, b=1.0)
+            alpha = a#busquedaDorada(alpha_funcion, epsilon=epsilon2, a=0.0, b=1.0)
             x_k1 = xk - alpha * np.dot(hessian_inv, grad)
 
             if np.linalg.norm(x_k1 - xk) / (np.linalg.norm(xk) + 0.00001) <= epsilon2:
@@ -91,6 +91,7 @@ def newton(f, x0, epsilon1, epsilon2, M):
             else:
                 k += 1
                 xk = x_k1
+        print(k)
     return xk
 
 x0 = np.array([2.0, 3.0]) #-3.5, -2.5
@@ -102,4 +103,4 @@ max_iter = 100
 def himmelblau(p):
         return (p[0]**2 + p[1] - 11)**2 + (p[0] + p[1]**2 - 7)**2
 
-print(newton(himmelblau, x0, e1, e2, max_iter))
+print(newton(himmelblau, x0, e1, e2, max_iter,0.01))

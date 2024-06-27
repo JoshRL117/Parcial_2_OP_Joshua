@@ -61,11 +61,11 @@ def cauchy(funcion, x0: np.ndarray, epsilon1: float, epsilon2: float, M: int) ->
                 terminar = True
             xk = xk_1
             k += 1
-    
+    print(k)
     return xk
 def himmelblau(p):
     return (p[0]**2 + p[1] - 11)**2 + (p[0] + p[1]**2 - 7)**2
 
 x0 = np.array([1.0,1.0])
 resultado = cauchy(himmelblau, x0, epsilon1=0.001, epsilon2=0.001, M=100)
-print(f"El mínimo se encuentra en x = {resultado}")
+print(resultado)

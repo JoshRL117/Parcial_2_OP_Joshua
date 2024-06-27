@@ -8,6 +8,19 @@ class Optimizador:
         self.epsilon2 = epsilon2
         self.funcion = f
         self.max_iter = max_iter
+    
+    def alpha_propuesto(self, funcion, alpha, xk, sk, t):
+        randv = np.random.uniform(0, 0.1)
+        a_new = alpha + randv
+        f_act = funcion(xk)
+        f_new = funcion(xk + a_new * sk)
+        if f_new < f_act:
+            return a_new
+        else:
+            v = (f_new - f_act) / t
+            if v >= np.random.uniform(0, 0.1):
+                return a_new
+        return alpha
 
     def hessian_matrix(self, f, x, deltaX):
         fx = f(x)
@@ -49,19 +62,6 @@ class Optimizador:
     def w_to_x(self, w, a, b):
         return w * (b - a) + a 
 
-    def busquedaDorada(self, funcion, epsilon, a=None, b=None):
-        phi = (1 + math.sqrt(5)) / 2 - 1
-        aw, bw = 0, 1
-        Lw = 1
-        k = 1
-        while Lw > epsilon:
-            w2 = aw + phi * Lw
-            w1 = bw - phi * Lw
-            aw, bw = self.regla_eliminacion(w1, w2, funcion(self.w_to_x(w1, a, b)), funcion(self.w_to_x(w2, a, b)), aw, bw)
-            k += 1
-            Lw = bw - aw
-        return (self.w_to_x(aw, a, b) + self.w_to_x(bw, a, b)) / 2
-
     def gradiente(self, f, x, deltaX=0.001):
         grad = []
         for i in range(len(x)):
@@ -76,19 +76,20 @@ class Optimizador:
         terminar = False
         xk = x0
         k = 0
-        alfa=0.01
+        t = 0.5
+        alfa = 0.01
         while not terminar:
             gradiente = np.array(self.gradiente(f, xk))
             hessiana = self.hessian_matrix(f, xk, deltaX=0.001)
             hessian_inv = np.linalg.inv(hessiana)
 
-            if np.linalg.norm(gradiente) < epsilon1 or k >= M:
+            if np.linalg.norm(gradiente) < epsilon1 or k >= M or t < epsilon2:
                 terminar = True
             else:
                 def alpha_funcion(alpha):
                     return f(xk - alpha * np.dot(hessian_inv, gradiente))
 
-                alfa=alfa**k #self.busquedaDorada(alpha_funcion, epsilon=epsilon2, a=0.0, b=1.0) 
+                alfa = self.alpha_propuesto(alpha_funcion, alfa, xk, np.dot(hessian_inv, gradiente), t)
                 x_k1 = xk - alfa * np.dot(hessian_inv, gradiente)
 
                 if np.linalg.norm(x_k1 - xk) / (np.linalg.norm(xk) + 0.00001) <= epsilon2:
@@ -96,13 +97,15 @@ class Optimizador:
                 else:
                     k += 1
                     xk = x_k1
-        print(k)
+                    t *= alfa
+
+        print("Número de iteraciones:", k)
         return xk
 
 def himmelblau(p):
     return (p[0]**2 + p[1] - 11)**2 + (p[0] + p[1]**2 - 7)**2
 
-x0 = np.array([1.0,1.0])
+x0 = np.array([2.0, 3.0])
 epsilon1 = 0.001
 epsilon2 = 0.001
 max_iter = 100
