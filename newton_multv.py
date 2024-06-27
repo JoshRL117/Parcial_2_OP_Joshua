@@ -438,9 +438,10 @@ class Optimizador:
 
 
     def grandiente_conjugado(self, e2, e3, optimizador):
-        fijo=0.01
+        #fijo=0.01
         x_inicial = self.variables
         s_inicial = -self.gradiente_calculation(x_inicial)
+        print(s_inicial)
         opt = self.optimizer(optimizador)
         alfa_inicial = opt()
         x_nuevo = x_inicial + alfa_inicial * s_inicial

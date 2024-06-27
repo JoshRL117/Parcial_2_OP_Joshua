@@ -10,7 +10,7 @@ class Optimizador:
         self.gradiente = []
 
     def testalpha(self, alfa):
-        return self.funcion(self.variables - (alfa * self.gradiente))
+        return self.funcion(self.variables - (alfa * np.array(self.gradiente)))
 
     def delta(self, a, b, n):
         return (b - a) / n
@@ -420,8 +420,6 @@ class Optimizador:
                 stop = True 
             else:
                 alfa = opt()
-                print(alfa)
-                print(alfa)
                 x_k1 = xk - alfa * np.dot(invhes, gradiente)
                 if np.linalg.norm((x_k1 - xk)) / (np.linalg.norm(xk) + 0.0000001) <= self.epsilon:
                     stop = True 
@@ -438,9 +436,10 @@ class Optimizador:
 
 
     def grandiente_conjugado(self, e2, e3, optimizador):
-        fijo=0.01
         x_inicial = self.variables
         s_inicial = -self.gradiente_calculation(x_inicial)
+        self.gradiente = s_inicial
+        print(s_inicial)
         opt = self.optimizer(optimizador)
         alfa_inicial = opt()
         x_nuevo = x_inicial + alfa_inicial * s_inicial
@@ -473,6 +472,6 @@ if __name__ == "__main__":
     e = 0.001
     opt = Optimizador(x, e, himmelblau)
     #print(opt.cauchy(e, 'golden'))
-    print(opt.newton_multvariable(e,'golden'))
-    #print(opt.grandiente_conjugado(e,e,'golden'))
+    #print(opt.newton_multvariable(e,'golden'))
+    print(opt.grandiente_conjugado(e,e,'golden'))
     #La salida debe ser de 3,2
