@@ -310,20 +310,25 @@ class Optimizador:
         opt = self.optimizer(optimizador)
         xk = self.variables
         k = 0
+        gradiente = np.array(self.gradiente_calculation(xk))
+        self.gradiente=gradiente
         while not stop:
             gradiente = np.array(self.gradiente_calculation(xk))
             self.gradiente=gradiente
             if np.linalg.norm(gradiente) < e1 or k >= self.iteracion:
                 stop = True
             else:
+                norm_grad = gradiente / np.linalg.norm(gradiente)#Normalice el gradiente para que no hubiera problemas
                 alfa = opt()
-                x_k1 = xk - (alfa * gradiente)
+                print(alfa)
+                x_k1 = xk - (abs(alfa) * norm_grad)
+                #print(x_k1)
                 if np.linalg.norm((x_k1 - xk)) / (np.linalg.norm(xk) + 0.0000001) <= self.epsilon:
                     stop = True
                 else:
                     k += 1
                     xk = x_k1
-        print(k)
+        print(xk)
         return xk
     def segundaderivadaop(self,x,i,delta):
         mof=x[i]
@@ -468,10 +473,10 @@ if __name__ == "__main__":
     def himmelblau(p):
         return (p[0]**2 + p[1] - 11)**2 + (p[0] + p[1]**2 - 7)**2
     
-    x = [2,3]
+    x = [1,1]
     e = 0.001
     opt = Optimizador(x, e, himmelblau)
-    #print(opt.cauchy(e, 'golden'))
+    print(opt.cauchy(e, 'golden'))
     #print(opt.newton_multvariable(e,'golden'))
-    print(opt.grandiente_conjugado(e,e,'golden'))
+    #print(opt.grandiente_conjugado(e,e,'golden'))
     #La salida debe ser de 3,2

@@ -468,7 +468,7 @@ if __name__ == "__main__":
     def himmelblau(p):
         return (p[0]**2 + p[1] - 11)**2 + (p[0] + p[1]**2 - 7)**2
     
-    x = [2,3]
+    x = [1,1]
     e = 0.001
     opt = Optimizador(x, e, himmelblau)
     #print(opt.cauchy(e, 'golden'))

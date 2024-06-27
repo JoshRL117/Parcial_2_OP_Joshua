@@ -55,7 +55,8 @@ def cauchy(funcion, x0: np.ndarray, epsilon1: float, epsilon2: float, M: int,a:f
             def alpha_funcion(alpha):
                 return funcion(xk - alpha * grad)
             
-            alpha = a#busquedaDorada(alpha_funcion, epsilon=epsilon2, a=0, b=1.0)
+            alpha = busquedaDorada(alpha_funcion, epsilon=epsilon2, a=0, b=1.0)
+            print(alpha)
             xk_1 = xk - alpha * grad
             if np.linalg.norm(xk_1 - xk) / (np.linalg.norm(xk) + 0.0001) < epsilon2:
                 terminar = True
